@@ -197,8 +197,8 @@ def llm_score_membership(score: float) -> dict:
         {"low": ..., "medium": ..., "high": ...}
     """
     return {
-        "low":    trapmf(score, -0.1, 0.0, 0.3, 0.5),
-        "medium": trimf(score, 0.3, 0.55, 0.75),
+        "low":    trapmf(score, -0.1, 0.0, 0.2, 0.35),
+        "medium": trimf(score, 0.25, 0.5, 0.75),
         "high":   trapmf(score, 0.65, 0.8, 1.0, 1.1),
     }
 
@@ -303,253 +303,60 @@ def evaluate_rules(
     pub_score: float,
     city_match: bool,
 ) -> list[tuple[float, str]]:
-    """
-    Tüm IF-THEN kurallarını değerlendirir.
-
-    Args:
-        price_m    : price_membership() çıktısı
-        quality_m  : image_quality_membership() çıktısı
-        fresh_m    : freshness_membership() çıktısı
-        llm_m      : llm_score_membership() çıktısı
-        pub_score  : publisher_score() çıktısı (0.0-1.0)
-        city_match : İlan şehri == kullanıcı şehri mi?
-
-    Returns:
-        [(aktivasyon_gücü, çıkış_kümesi), ...] listesi
-    """
-
-    # Kısaltmalar — okunabilirlik için
-    p  = price_m       # price kümeler: cheap, fair, expensive
-    q  = quality_m     # quality kümeler: poor, fair, good
-    f  = fresh_m       # freshness kümeler: fresh, recent, old
-    l  = llm_m         # llm kümeler: low, medium, high
-    ps = pub_score     # 0.0 - 1.0
-    cm = 1.0 if city_match else 0.0   # şehir eşleşmesi
+    p  = price_m
+    q  = quality_m
+    f  = fresh_m
+    l  = llm_m
+    ps = pub_score
 
     rules = []
 
-    # ── GRUP A: Mükemmel ilanlar ──────────────────────────────────────
-    # Ucuz + kaliteli + taze + LLM uyumlu = çok yüksek skor
-    rules.append((
-        min(p["cheap"], q["good"], f["fresh"], l["high"]),
-        "very_high"
-    ))
+    # ── GRUP A: LLM yüksek (kullanıcı isteğine uyumlu) ───────────────
+    # LLM en kritik sinyal — tercihler karşılanıyorsa güçlü pozitif
+    rules.append((min(l["high"], p["cheap"],     f["fresh"]),  "very_high"))
+    rules.append((min(l["high"], p["cheap"],     f["recent"]), "very_high"))
+    rules.append((min(l["high"], p["fair"],      f["fresh"]),  "very_high"))
+    rules.append((min(l["high"], p["fair"],      f["recent"]), "high"))
+    rules.append((min(l["high"], p["fair"],      f["old"]),    "high"))
+    rules.append((min(l["high"], p["cheap"],     f["old"]),    "high"))
+    rules.append((min(l["high"], p["expensive"], f["fresh"]),  "medium"))
+    rules.append((min(l["high"], p["expensive"], f["recent"]), "medium"))
+    rules.append((min(l["high"], p["expensive"], f["old"]),    "low"))
 
-    # Uygun fiyat + iyi kalite + LLM uyumlu + şehir eşleşmesi
-    rules.append((
-        min(p["fair"], q["good"], l["high"], cm),
-        "very_high"
-    ))
+    # ── GRUP B: LLM orta ─────────────────────────────────────────────
+    rules.append((min(l["medium"], p["cheap"],     f["fresh"]),  "high"))
+    rules.append((min(l["medium"], p["cheap"],     f["recent"]), "high"))
+    rules.append((min(l["medium"], p["fair"],      f["fresh"]),  "high"))
+    rules.append((min(l["medium"], p["fair"],      f["recent"]), "medium"))
+    rules.append((min(l["medium"], p["fair"],      f["old"]),    "medium"))
+    rules.append((min(l["medium"], p["cheap"],     f["old"]),    "medium"))
+    rules.append((min(l["medium"], p["expensive"], f["fresh"]),  "low"))
+    rules.append((min(l["medium"], p["expensive"], f["recent"]), "low"))
+    rules.append((min(l["medium"], p["expensive"], f["old"]),    "very_low"))
 
-    # Ucuz + orta kalite + LLM yüksek
-    rules.append((
-        min(p["cheap"], q["fair"], l["high"]),
-        "high"
-    ))
+    # ── GRUP C: LLM düşük (tercihler karşılanmıyor) ───────────────────
+    # LLM düşükse fiyat/tazelik ne olursa olsun skor düşük kalmalı
+    rules.append((min(l["low"], p["cheap"],     f["fresh"]),  "medium"))
+    rules.append((min(l["low"], p["cheap"],     f["recent"]), "low"))
+    rules.append((min(l["low"], p["cheap"],     f["old"]),    "low"))
+    rules.append((min(l["low"], p["fair"],      f["fresh"]),  "low"))
+    rules.append((min(l["low"], p["fair"],      f["recent"]), "low"))
+    rules.append((min(l["low"], p["fair"],      f["old"]),    "very_low"))
+    rules.append((min(l["low"], p["expensive"]),              "very_low"))
 
-    # ── GRUP B: İyi ilanlar ───────────────────────────────────────────
-    # Uygun fiyat + iyi kalite + taze
-    rules.append((
-        min(p["fair"], q["good"], f["fresh"]),
-        "high"
-    ))
+    # ── GRUP D: Görsel kalite düzeltici ───────────────────────────────
+    # Fotoğraf yoksa LLM ne derse desin biraz ceza
+    rules.append((min(q["poor"], l["high"]),   "medium"))   # LLM yüksek ama fotoğraf yok → medium'a çek
+    rules.append((min(q["poor"], l["medium"]), "low"))
+    rules.append((min(q["poor"], l["low"]),    "very_low"))
 
-    # Ucuz + iyi kalite + güncel
-    rules.append((
-        min(p["cheap"], q["good"], f["recent"]),
-        "high"
-    ))
+    # İyi fotoğraf küçük bonus
+    rules.append((min(q["good"], l["high"]),   "very_high"))
+    rules.append((min(q["good"], l["medium"]), "high"))
 
-    # Uygun fiyat + orta kalite + LLM orta + şehir eşleşmesi
-    rules.append((
-        min(p["fair"], q["fair"], l["medium"], cm),
-        "high"
-    ))
-
-    # Mal sahibi + ucuz + taze
-    rules.append((
-        min(ps, p["cheap"], f["fresh"]),
-        "high"
-    ))
-
-    # Ucuz + LLM yüksek + şehir eşleşmesi
-    rules.append((
-        min(p["cheap"], l["high"], cm),
-        "high"
-    ))
-
-    # ── GRUP C: Orta ilanlar ──────────────────────────────────────────
-    # Uygun fiyat + orta kalite + güncel
-    rules.append((
-        min(p["fair"], q["fair"], f["recent"]),
-        "medium"
-    ))
-
-    # Ucuz + kötü kalite + LLM orta
-    rules.append((
-        min(p["cheap"], q["poor"], l["medium"]),
-        "medium"
-    ))
-
-    # Pahalı + iyi kalite + LLM yüksek + taze
-    rules.append((
-        min(p["expensive"], q["good"], l["high"], f["fresh"]),
-        "medium"
-    ))
-
-    # Uygun fiyat + taze (kalite belirsiz)
-    rules.append((
-        min(p["fair"], f["fresh"]),
-        "medium"
-    ))
-
-    # Şehir eşleşmesi + orta kalite + güncel
-    rules.append((
-        min(cm, q["fair"], f["recent"]),
-        "medium"
-    ))
-
-    # Mal sahibi + uygun fiyat + eski ilan
-    rules.append((
-        min(ps, p["fair"], f["old"]),
-        "medium"
-    ))
-
-    # Ucuz + kötü görsel + eski (fiyat cazibesiyle kurtarıyor)
-    rules.append((
-        min(p["cheap"], q["poor"], f["old"]),
-        "medium"
-    ))
-
-    # ── GRUP D: Düşük skorlu ilanlar ─────────────────────────────────
-    # Pahalı + kötü kalite
-    rules.append((
-        min(p["expensive"], q["poor"]),
-        "low"
-    ))
-
-    # Pahalı + LLM düşük
-    rules.append((
-        min(p["expensive"], l["low"]),
-        "low"
-    ))
-
-    # Eski ilan + kötü kalite + LLM düşük
-    rules.append((
-        min(f["old"], q["poor"], l["low"]),
-        "low"
-    ))
-
-    # Pahalı + eski + şehir eşleşmesi yok
-    rules.append((
-        min(p["expensive"], f["old"], 1.0 - cm),
-        "low"
-    ))
-
-    # Kötü görsel + LLM düşük + eski
-    rules.append((
-        min(q["poor"], l["low"], f["old"]),
-        "low"
-    ))
-
-    # Pahalı + güncel değil + LLM orta
-    rules.append((
-        min(p["expensive"], f["old"], l["medium"]),
-        "low"
-    ))
-
-    # ── GRUP E: Çok düşük skorlu ilanlar ─────────────────────────────
-    # Pahalı + kötü görsel + LLM düşük + eski
-    rules.append((
-        min(p["expensive"], q["poor"], l["low"], f["old"]),
-        "very_low"
-    ))
-
-    # Şehir eşleşmesi yok + pahalı + kötü kalite
-    rules.append((
-        min(1.0 - cm, p["expensive"], q["poor"]),
-        "very_low"
-    ))
-
-    # ── GRUP F: Özel durumlar ─────────────────────────────────────────
-    # Fotoğraf yok + LLM düşük (ilan kalitesi çok kötü)
-    rules.append((
-        min(q["poor"], l["low"]),
-        "very_low"
-    ))
-
-    # Şehir eşleşmesi var + ucuz + LLM yüksek + mal sahibi
-    rules.append((
-        min(cm, p["cheap"], l["high"], ps),
-        "very_high"
-    ))
-
-    # Şehir yanlış ama her şey mükemmel (yine de değerlendirilebilir)
-    rules.append((
-        min(1.0 - cm, p["cheap"], q["good"], l["high"]),
-        "high"
-    ))
-
-    # Güncel + iyi kalite + LLM orta
-    rules.append((
-        min(f["fresh"], q["good"], l["medium"]),
-        "high"
-    ))
-
-    # Uygun fiyat + LLM düşük (kullanıcı isteğiyle örtüşmüyor)
-    rules.append((
-        min(p["fair"], l["low"]),
-        "low"
-    ))
-
-    # ── GRUP G: LLM ağırlığı (metin uyumu) ────────────────────────────
-    # LLM "high" ise, metin tercihlere çok uyumlu demektir.
-    # Bu sinyalin skor üzerindeki etkisini görünür kılmak için
-    # birkaç güçlü kural ekliyoruz.
-    rules.append((
-        min(l["high"], cm),
-        "high"
-    ))
-    rules.append((
-        min(l["high"], q["good"]),
-        "high"
-    ))
-    rules.append((
-        min(l["high"], q["good"], f["fresh"], cm),
-        "very_high"
-    ))
-
-    # ── FALLBACK: Güvenlik ağı ────────────────────────────────────────
-    # Daha yumuşak/ayrıştırıcı kurallar (tek kriterle de sinyal üret).
-    # Not: LLM skorları henüz entegre değilken (çoğu 0.5), bu kurallar
-    # 50.0 etrafında yığılmayı azaltmaya yardımcı olur.
-
-    # Sadece fiyat sinyali
-    rules.append((p["cheap"], "medium"))
-    rules.append((p["fair"], "medium"))
-    # Pahalı cezasını biraz yumuşat (LLM high durumunda aşırı baskı kurmasın)
-    rules.append((p["expensive"] * 0.7, "low"))
-
-    # Sadece tazelik sinyali
-    rules.append((f["fresh"], "high"))
-    rules.append((f["recent"], "medium"))
-    rules.append((f["old"], "low"))
-
-    # Sadece görsel kalite sinyali
-    rules.append((q["good"], "high"))
-    rules.append((q["fair"], "medium"))
-    rules.append((q["poor"], "low"))
-
-    # Şehir eşleşmesi tek başına küçük bir bonus
-    rules.append((cm * 0.6, "medium"))
-
-    # Yayıncı (mal sahibi) bonusu: tek başına küçük pozitif itki
-    rules.append((ps * 0.4, "medium"))
-
-    # Hiçbir kural ateşlenmese bile ilan değerlendirilebilir olsun.
-    # Bu fallback sadece diğer tüm kurallar 0 ise devreye girer.
-    if max((strength for strength, _ in rules), default=0.0) == 0.0:
-        rules.append((0.05, "medium"))
+    # ── GRUP E: Yayıncı bonusu ────────────────────────────────────────
+    # Mal sahibi + LLM yüksek + ucuz → ekstra bonus
+    rules.append((min(ps, l["high"], p["cheap"]), "very_high"))
 
     return rules
 
@@ -650,7 +457,13 @@ def score_ad(
     # ── Adım 3 & 4: Aggregation + Defuzzification ────────────────────
     final_score = defuzzify(rules)
 
-    # ── Adım 5: Sonucu paketle ───────────────────────────────────────
+    # ── Adım 5: Şehir cezası (post-processing) ───────────────────────
+    # Yanlış şehir ilanlarına %35 ceza — kural tabanlı değil, doğrudan çarpan.
+    # Bu sayede doğru şehir ilanları her zaman önde gelir.
+    if not city_match:
+        final_score = round(final_score * 0.65, 2)
+
+    # ── Adım 6: Sonucu paketle ───────────────────────────────────────
     return {
         "id":    ad["id"],
         "title": ad["title"],

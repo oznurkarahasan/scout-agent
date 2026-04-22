@@ -48,15 +48,24 @@ def groq_llm_score(description: str, prefs: UserPreferences, *, require_remote: 
         return heuristic_llm_score(description, prefs)
 
     system = (
-        "You are a strict scorer for Turkish real-estate listings. "
-        "Return JSON only. Score must be a float between 0 and 1."
+        "You are a real-estate listing scorer for Turkish listings. "
+        "Score how well a listing matches the user's preferences using partial credit. "
+        "Requirements are PREFERENCES, not hard filters — partial matches should get middle scores. "
+        "Return JSON only with a single key 'llm_score' as a float between 0.0 and 1.0.\n\n"
+        "Scoring guide:\n"
+        "  0.8-1.0 : All or nearly all preferences clearly present\n"
+        "  0.5-0.8 : Most preferences met, 1-2 missing\n"
+        "  0.3-0.5 : Some preferences met (e.g. correct room count but missing amenities)\n"
+        "  0.1-0.3 : Few preferences met\n"
+        "  0.0-0.1 : Nothing matches\n\n"
+        "Important: never give 0.0 unless the listing is completely irrelevant. "
+        "A listing with the correct room count but missing other features should score at least 0.3."
     )
     user = json.dumps(
         {
-            "task": "Score how well the listing matches the user's preferences.",
             "user_preferences": prefs.free_text,
-            "listing_description": description,
-            "return": {"llm_score": "float in [0,1]"},
+            "listing": description,
+            "return": {"llm_score": "float in [0.0, 1.0]"},
         },
         ensure_ascii=False,
     )
@@ -66,7 +75,6 @@ def groq_llm_score(description: str, prefs: UserPreferences, *, require_remote: 
     except Exception:
         if require_remote:
             raise
-        # Ağ/servis hatalarında sistemi bozmayalım; heuristic'e düş.
         return heuristic_llm_score(description, prefs)
 
 
@@ -91,12 +99,15 @@ def score_ads_with_llm(
     scores: dict[str, float] = {}
     for ad in ads:
         ad_id = str(ad.get("id", ""))
-        desc = str(ad.get("description", ""))
+        # Başlık + açıklama birleştir — model oda sayısını başlıktan okuyabilsin
+        title = str(ad.get("title", ""))
+        desc  = str(ad.get("description", ""))
+        full_text = f"Başlık: {title}\nAçıklama: {desc}".strip()
         if not ad_id:
             continue
         if use_remote_llm is False:
-            scores[ad_id] = heuristic_llm_score(desc, prefs)
+            scores[ad_id] = heuristic_llm_score(full_text, prefs)
         else:
-            scores[ad_id] = groq_llm_score(desc, prefs, require_remote=(use_remote_llm is True))
+            scores[ad_id] = groq_llm_score(full_text, prefs, require_remote=(use_remote_llm is True))
     return scores
 
