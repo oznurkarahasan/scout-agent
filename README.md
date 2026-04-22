@@ -52,6 +52,10 @@ GROQ_API_KEY=your_groq_api_key_here
 ```
 
 ### Usage
+Run in de cli:
+```bash
+python3 main.py
+```
 Run the Streamlit dashboard to interact with the assistant:
 ```bash
 streamlit run app.py
