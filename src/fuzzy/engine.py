@@ -502,6 +502,23 @@ def evaluate_rules(
         "low"
     ))
 
+    # ── GRUP G: LLM ağırlığı (metin uyumu) ────────────────────────────
+    # LLM "high" ise, metin tercihlere çok uyumlu demektir.
+    # Bu sinyalin skor üzerindeki etkisini görünür kılmak için
+    # birkaç güçlü kural ekliyoruz.
+    rules.append((
+        min(l["high"], cm),
+        "high"
+    ))
+    rules.append((
+        min(l["high"], q["good"]),
+        "high"
+    ))
+    rules.append((
+        min(l["high"], q["good"], f["fresh"], cm),
+        "very_high"
+    ))
+
     # ── FALLBACK: Güvenlik ağı ────────────────────────────────────────
     # Daha yumuşak/ayrıştırıcı kurallar (tek kriterle de sinyal üret).
     # Not: LLM skorları henüz entegre değilken (çoğu 0.5), bu kurallar
@@ -510,7 +527,8 @@ def evaluate_rules(
     # Sadece fiyat sinyali
     rules.append((p["cheap"], "medium"))
     rules.append((p["fair"], "medium"))
-    rules.append((p["expensive"], "low"))
+    # Pahalı cezasını biraz yumuşat (LLM high durumunda aşırı baskı kurmasın)
+    rules.append((p["expensive"] * 0.7, "low"))
 
     # Sadece tazelik sinyali
     rules.append((f["fresh"], "high"))
@@ -685,10 +703,26 @@ def score_all_ads(
 
 # ══════════════════════════════════════════════════════════════════════
 # DOĞRUDAN ÇALIŞTIRMA — Hızlı test --- python3 src/fuzzy/engine.py
+# USE_LLM=1 REQUIRE_GROQ=1 USER_PREFS="balkon, eşyalı, metro" python3 src/fuzzy/engine.py
 # ══════════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    import json, os
+    import json, os, sys
+
+    # Bu dosya doğrudan çalıştırıldığında `src.*` importları için repo root'u ekle.
+    _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    if _ROOT not in sys.path:
+        sys.path.insert(0, _ROOT)
+
+    # .env dosyasından GROQ_API_KEY / USE_LLM / USER_PREFS al
+    try:
+        from dotenv import load_dotenv  # type: ignore
+
+        load_dotenv()
+    except Exception:
+        pass
+
+    from src.llm import UserPreferences, score_ads_with_llm
 
     # Normalize veriyi yükle
     data_path = os.path.join(
@@ -703,13 +737,44 @@ if __name__ == "__main__":
     # Kullanıcı tercihleri
     BUDGET    = 10_000   # TL
     CITY      = "İstanbul"
+    # LLM entegrasyonu için demo tercih metni (istersen main/app tarafına taşırız)
+    USER_PREFS = os.getenv("USER_PREFS", "balkon, eşyalı, ulaşım, metro, yeni")
+    USE_LLM = (os.getenv("USE_LLM", "0").strip() == "1")
+    REQUIRE_GROQ = (os.getenv("REQUIRE_GROQ", "0").strip() == "1")
 
     print(f"\n{'='*55}")
     print(f"  Scout Agent — Bulanık Mantık Motoru")
     print(f"  Bütçe: {BUDGET:,} TL  |  Şehir: {CITY}")
+    print(f"  LLM: {'AÇIK' if USE_LLM else 'KAPALI'}")
+    if USE_LLM:
+        print(f"  Groq: {'ZORUNLU' if REQUIRE_GROQ else 'Opsiyonel (fallback var)'}")
     print(f"{'='*55}\n")
 
-    results = score_all_ads(ads, user_budget=BUDGET, user_city=CITY, filter_city=True)
+    if USE_LLM and REQUIRE_GROQ:
+        proxy_vars = ["HTTPS_PROXY", "HTTP_PROXY", "ALL_PROXY", "https_proxy", "http_proxy", "all_proxy"]
+        active = {k: os.getenv(k) for k in proxy_vars if os.getenv(k)}
+        if active:
+            print("[LLM][WARN] Proxy ortam değişkenleri tespit edildi; Groq isteği proxy üzerinden engellenebilir.")
+            for k, v in active.items():
+                print(f"  - {k}={v}")
+            print("")
+
+    # Önce şehir filtresi uygula (performans için)
+    filtered_ads = [a for a in ads if _norm_text(a.get("city", "")) == _norm_text(CITY)]
+
+    llm_scores = None
+    if USE_LLM:
+        prefs = UserPreferences(free_text=USER_PREFS)
+        llm_scores = score_ads_with_llm(filtered_ads, prefs, use_remote_llm=True if REQUIRE_GROQ else None)
+        print(f"[LLM] {len(llm_scores)} ilan için llm_score üretildi. Örn: {list(llm_scores.items())[:2]}\n")
+
+    results = score_all_ads(
+        filtered_ads,
+        user_budget=BUDGET,
+        user_city=CITY,
+        llm_scores=llm_scores,
+        filter_city=False,  # zaten yukarıda filtreledik
+    )
 
     print(f"{'Sıra':<5} {'Puan':>6}  {'İlan Başlığı':<45} {'Şehir'}")
     print("-" * 75)
