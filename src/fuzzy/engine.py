@@ -358,6 +358,12 @@ def evaluate_rules(
     # Mal sahibi + LLM yüksek + ucuz → ekstra bonus
     rules.append((min(ps, l["high"], p["cheap"]), "very_high"))
 
+    # ── FALLBACK: Güvenlik ağı ────────────────────────────────────────
+    # Hiçbir kural ateşlenmese bile defuzzify 0.0 dönmesin.
+    # 0.05 aktivasyon → skoru hafifçe "medium"a çeker, gerçek kurallar
+    # ateşlenince bu kural etkisiz kalır.
+    rules.append((0.05, "medium"))
+
     return rules
 
 

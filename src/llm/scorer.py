@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import json
 import math
+import json
+import unicodedata
 import os
 from dataclasses import dataclass
 
@@ -23,25 +24,33 @@ def _clamp01(x: float) -> float:
     return max(0.0, min(1.0, float(x)))
 
 
+def _norm_text(s: str) -> str:
+    """Türkçe karakter farklılıklarına karşı dayanıklı metin normalizer."""
+    s = unicodedata.normalize("NFKC", str(s)).strip().casefold()
+    return s.replace("ı", "i").replace("i̇", "i")
+
+
 def heuristic_llm_score(description: str, prefs: UserPreferences) -> float:
     """
     API anahtarı yokken çalışmayı bozmayacak deterministik bir skorlayıcı.
     Çok kaba bir yaklaşım: tercihlerdeki anahtar kelimeleri description'da arar.
     """
-    desc = (description or "").casefold()
-    tokens = [t.strip().casefold() for t in (prefs.free_text or "").split(",") if t.strip()]
+    desc   = _norm_text(description or "")
+    tokens = [_norm_text(t) for t in (prefs.free_text or "").split(",") if t.strip()]
     if not tokens:
         return 0.5
 
-    hits = 0
-    for t in tokens:
-        if t and t in desc:
-            hits += 1
+    hits = sum(1 for t in tokens if t and t in desc)
     return _clamp01(0.2 + 0.8 * (hits / len(tokens)))
 
 
-def groq_llm_score(description: str, prefs: UserPreferences, *, require_remote: bool = False) -> float:
-    client = GroqClient.from_env()
+def groq_llm_score(
+    description: str,
+    prefs: UserPreferences,
+    *,
+    client: "GroqClient | None" = None,
+    require_remote: bool = False,
+) -> float:
     if client is None:
         if require_remote:
             raise RuntimeError("GROQ_API_KEY missing; remote LLM scoring is required.")
@@ -92,22 +101,27 @@ def score_ads_with_llm(
       - True: zorla Groq (anahtar yoksa RuntimeError)
       - False: zorla heuristic
     """
-    client_present = GroqClient.from_env() is not None
-    if use_remote_llm is True and not client_present:
+    # GroqClient TEK SEFER oluşturulur — her ilan için tekrar çağrılmaz.
+    client = GroqClient.from_env()
+
+    if use_remote_llm is True and client is None:
         raise RuntimeError("GROQ_API_KEY missing; cannot use remote LLM scoring.")
 
     scores: dict[str, float] = {}
     for ad in ads:
         ad_id = str(ad.get("id", ""))
-        # Başlık + açıklama birleştir — model oda sayısını başlıktan okuyabilsin
-        title = str(ad.get("title", ""))
-        desc  = str(ad.get("description", ""))
-        full_text = f"Başlık: {title}\nAçıklama: {desc}".strip()
         if not ad_id:
             continue
-        if use_remote_llm is False:
+        title     = str(ad.get("title", ""))
+        desc      = str(ad.get("description", ""))
+        full_text = f"Başlık: {title}\nAçıklama: {desc}".strip()
+
+        if use_remote_llm is False or client is None:
             scores[ad_id] = heuristic_llm_score(full_text, prefs)
         else:
-            scores[ad_id] = groq_llm_score(full_text, prefs, require_remote=(use_remote_llm is True))
+            scores[ad_id] = groq_llm_score(
+                full_text, prefs,
+                client=client,
+                require_remote=(use_remote_llm is True),
+            )
     return scores
-

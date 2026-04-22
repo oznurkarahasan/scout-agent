@@ -93,10 +93,9 @@ class GroqClient:
                 if attempt >= self._cfg.max_retries:
                     break
                 time.sleep(0.5 * (attempt + 1))
-            except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, KeyError, json.JSONDecodeError) as e:
+            except (urllib.error.URLError, TimeoutError, KeyError, json.JSONDecodeError) as e:
                 last_err = e
                 if attempt >= self._cfg.max_retries:
                     break
                 time.sleep(0.5 * (attempt + 1))
         raise RuntimeError(f"Groq request failed after retries: {last_err}") from last_err
-
