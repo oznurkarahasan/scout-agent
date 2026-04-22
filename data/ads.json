@@ -5,7 +5,12 @@
     "price_raw": "12.500 TL/ay",
     "location_raw": "Kadıköy, İstanbul",
     "description": "Güneş alan, ebeveyn banyolu, amerikan mutfaklı, yeni tadilatlı daire. Otopark mevcut. Ulaşıma çok yakın.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg"
+    ],
     "image_count": 4,
     "posted_date": "2026-04-20",
     "source": "sahibinden",
@@ -20,7 +25,10 @@
     "price_raw": "9.000TL/ay",
     "location_raw": "Çankaya, Ankara",
     "description": "Kombi ısıtmalı, beyaz eşyalı, 3. kat, asansörlü bina. Site içinde.",
-    "images": ["img1.jpg", "img2.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
     "image_count": 2,
     "posted_date": "2026-04-18",
     "source": "emlakjet",
@@ -35,7 +43,11 @@
     "price_raw": "6.750 TL / ay",
     "location_raw": "Karşıyaka, İzmir",
     "description": "Deniz manzarası, balkonlu, metro yakını. Evcil hayvan kabul edilmez.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
     "image_count": 3,
     "posted_date": "2026-04-15",
     "source": "sahibinden",
@@ -50,7 +62,9 @@
     "price_raw": "15.000 TL/ay",
     "location_raw": "Nilüfer, Bursa",
     "description": "Özel bahçeli, 4+1, garajlı müstakil ev. Sakin mahalle, ilkokul yakını.",
-    "images": ["img1.jpg"],
+    "images": [
+      "img1.jpg"
+    ],
     "image_count": 1,
     "posted_date": "2026-04-10",
     "source": "hepsiemlak",
@@ -65,7 +79,13 @@
     "price_raw": "18.000 TL/Ay",
     "location_raw": "Konyaaltı, Antalya",
     "description": "Denize 50 metre, tam eşyalı, klimalı, güvenlikli site. Yaz kış oturulur.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg", "img5.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg",
+      "img5.jpg"
+    ],
     "image_count": 5,
     "posted_date": "2026-04-21",
     "source": "sahibinden",
@@ -80,7 +100,10 @@
     "price_raw": "11000 TL/ay",
     "location_raw": "Beşiktaş,İstanbul",
     "description": "Bakımlı bina, 2. kat, asansör yok. Doğalgaz sobası. Ulaşım çok kolay.",
-    "images": ["img1.jpg", "img2.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
     "image_count": 2,
     "posted_date": "2026-04-19",
     "source": "emlakjet",
@@ -95,7 +118,11 @@
     "price_raw": "10.500 TL / ay",
     "location_raw": "Yenimahalle, Ankara",
     "description": "AVM ve hastane yakını, metro durağına 5 dk. Isıtma merkezi sistem. Balkon var.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
     "image_count": 3,
     "posted_date": "2026-04-12",
     "source": "hepsiemlak",
@@ -110,7 +137,9 @@
     "price_raw": "5.500TL/ay",
     "location_raw": "Bornova, İzmir",
     "description": "Üniversiteye yürüme mesafesi. Kombi, internet dahil. Temiz ve bakımlı.",
-    "images": ["img1.jpg"],
+    "images": [
+      "img1.jpg"
+    ],
     "image_count": 1,
     "posted_date": "2026-04-08",
     "source": "sahibinden",
@@ -125,7 +154,12 @@
     "price_raw": "13.000 TL/ay",
     "location_raw": "Osmangazi, Bursa",
     "description": "Geniş salon, çift banyolu, ebeveyn yatak odalı, depolu. Çocuk parkı yanında.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg"
+    ],
     "image_count": 4,
     "posted_date": "2026-04-17",
     "source": "emlakjet",
@@ -140,7 +174,10 @@
     "price_raw": "8.500 TL/Ay",
     "location_raw": "Muratpaşa, Antalya",
     "description": "Şehir merkezine yakın, güneyli cephe, balkon, otopark yok. Faturalar kiracıya ait.",
-    "images": ["img1.jpg", "img2.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
     "image_count": 2,
     "posted_date": "2026-04-14",
     "source": "sahibinden",
@@ -155,7 +192,11 @@
     "price_raw": "14.000 TL/ay",
     "location_raw": "Ümraniye, İstanbul",
     "description": "Acele kiraya verilecektir. Eşyasız, ısıtma kombi, site içi, kapalı otopark.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
     "image_count": 3,
     "posted_date": "2026-04-22",
     "source": "hepsiemlak",
@@ -170,7 +211,13 @@
     "price_raw": "7.500 TL /ay",
     "location_raw": "Etimesgut, Ankara",
     "description": "Yüzme havuzu, spor salonu, 7/24 güvenlik. Eşyalı, yeni bina.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg", "img5.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg",
+      "img5.jpg"
+    ],
     "image_count": 5,
     "posted_date": "2026-04-20",
     "source": "emlakjet",
@@ -185,7 +232,10 @@
     "price_raw": "7.200 TL/ay",
     "location_raw": "Konak, İzmir",
     "description": "Restore edilmiş tarihi yapı. Yüksek tavan, ahşap zemin, deniz manzarası.",
-    "images": ["img1.jpg", "img2.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
     "image_count": 2,
     "posted_date": "2026-04-05",
     "source": "sahibinden",
@@ -200,7 +250,11 @@
     "price_raw": "9.500 TL/ay",
     "location_raw": "Gemlik, Bursa",
     "description": "Geniş teras, deniz manzaralı, sakin semt. Araç zorunlu. İki otopark.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
     "image_count": 3,
     "posted_date": "2026-04-11",
     "source": "hepsiemlak",
@@ -230,7 +284,12 @@
     "price_raw": "16.000 TL/Ay",
     "location_raw": "Maltepe, İstanbul",
     "description": "Ada ve deniz manzarası, tam eşyalı, yeni bina, 8. kat, beyaz eşyalı.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg"
+    ],
     "image_count": 4,
     "posted_date": "2026-04-19",
     "source": "emlakjet",
@@ -245,7 +304,9 @@
     "price_raw": "8.000 TL/ay",
     "location_raw": "Keçiören, Ankara",
     "description": "Sakin sokak, 4. kat, kombi, geniş oda. Aidat 400 TL.",
-    "images": ["img1.jpg"],
+    "images": [
+      "img1.jpg"
+    ],
     "image_count": 1,
     "posted_date": "2026-04-09",
     "source": "sahibinden",
@@ -260,7 +321,11 @@
     "price_raw": "6.500 TL /ay",
     "location_raw": "Gaziemir, İzmir",
     "description": "Yeni bina, sıfır daire, beyaz eşyalı, metro hattı üzeri.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
     "image_count": 3,
     "posted_date": "2026-04-21",
     "source": "hepsiemlak",
@@ -275,7 +340,10 @@
     "price_raw": "7.000 TL/ay",
     "location_raw": "İnegöl, Bursa",
     "description": "Müstakil ev, büyük bahçe, garaj. İlçe merkezine 10 dk. Sakin.",
-    "images": ["img1.jpg", "img2.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
     "image_count": 2,
     "posted_date": "2026-04-03",
     "source": "sahibinden",
@@ -290,7 +358,11 @@
     "price_raw": "11.000 TL / Ay",
     "location_raw": "Alanya, Antalya",
     "description": "Havuzlu site, plaja 3 dk yürüyüş, klimalı, her şey dahil fiyat.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
     "image_count": 3,
     "posted_date": "2026-04-16",
     "source": "emlakjet",
@@ -305,7 +377,13 @@
     "price_raw": "22.000TL/ay",
     "location_raw": "Sarıyer,İstanbul",
     "description": "Boğaz manzarası, özel bahçe, çift garaj, güvenlikli site içi. Lüks yaşam.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg", "img5.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg",
+      "img5.jpg"
+    ],
     "image_count": 5,
     "posted_date": "2026-04-18",
     "source": "hepsiemlak",
@@ -335,7 +413,11 @@
     "price_raw": "9.800 TL/ay",
     "location_raw": "Alsancak, İzmir",
     "description": "Butik bina, eşyalı, klima, balkon. Kafe ve restoranlar yürüme mesafesi.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
     "image_count": 3,
     "posted_date": "2026-04-20",
     "source": "sahibinden",
@@ -350,7 +432,9 @@
     "price_raw": "6.800 TL / ay",
     "location_raw": "Mudanya, Bursa",
     "description": "Sakin semt, bahçe kullanımı, denize 1 km. Otopark mevcut.",
-    "images": ["img1.jpg"],
+    "images": [
+      "img1.jpg"
+    ],
     "image_count": 1,
     "posted_date": "2026-04-07",
     "source": "emlakjet",
@@ -365,7 +449,12 @@
     "price_raw": "19.500 TL/Ay",
     "location_raw": "Lara, Antalya",
     "description": "Lüks site, iki havuz, spor salonu, SPA. Tam eşyalı. Plaja 500 metre.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg"
+    ],
     "image_count": 4,
     "posted_date": "2026-04-22",
     "source": "hepsiemlak",
@@ -380,7 +469,10 @@
     "price_raw": "10.000 TL/ay",
     "location_raw": "Bahçelievler, İstanbul",
     "description": "Bakımlı bina, kombili, balkon, otopark. E-5 kenarı gürültülü olabilir.",
-    "images": ["img1.jpg", "img2.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
     "image_count": 2,
     "posted_date": "2026-04-13",
     "source": "sahibinden",
@@ -395,7 +487,9 @@
     "price_raw": "5.000 TL/ay",
     "location_raw": "Altındağ, Ankara",
     "description": "Merkezi konum, eski bina, doğalgaz. Ulaşım imkânları iyi.",
-    "images": ["img1.jpg"],
+    "images": [
+      "img1.jpg"
+    ],
     "image_count": 1,
     "posted_date": "2026-03-30",
     "source": "sahibinden",
@@ -410,7 +504,12 @@
     "price_raw": "11.500 TL /ay",
     "location_raw": "Bayraklı, İzmir",
     "description": "Sıfır bina, amerikan mutfak, çift balkon, ebeveyn banyosu, 5. kat.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg"
+    ],
     "image_count": 4,
     "posted_date": "2026-04-21",
     "source": "emlakjet",
@@ -425,7 +524,10 @@
     "price_raw": "8.750 TL/ay",
     "location_raw": "Yıldırım, Bursa",
     "description": "Fiyat düşürüldü! Kombi, balkon, 3. kat. Çarşıya yürüme mesafesi.",
-    "images": ["img1.jpg", "img2.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
     "image_count": 2,
     "posted_date": "2026-04-06",
     "source": "hepsiemlak",
@@ -440,7 +542,13 @@
     "price_raw": "25.000 TL / Ay",
     "location_raw": "Döşemealtı, Antalya",
     "description": "Özel villa, 1200m2 arsa, yüzme havuzu, 4 yatak odası, tam bağımsız yaşam.",
-    "images": ["img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg", "img5.jpg"],
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg",
+      "img5.jpg"
+    ],
     "image_count": 5,
     "posted_date": "2026-04-17",
     "source": "sahibinden",
@@ -448,5 +556,568 @@
     "publisher_name": "Nuri Akman",
     "views": 995,
     "is_featured": true
+  },
+  {
+    "id": "ilan-00131",
+    "title": "Nişantaşı'nda 2+1 Prestijli Kiralık",
+    "price_raw": "28.000 TL/ay",
+    "location_raw": "Şişli, İstanbul",
+    "description": "Nişantaşı kalbinde, yüksek tavanlı, parke zemin, full eşyalı 2+1 daire. Butik apart bina, 24 saat kapıcı. Alışveriş ve restoranlar kapı komşusu.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg",
+      "img5.jpg"
+    ],
+    "image_count": 5,
+    "posted_date": "2026-04-22",
+    "source": "hepsiemlak",
+    "publisher_type": "agent",
+    "publisher_name": "Şişli Prestige Emlak",
+    "views": 980,
+    "is_featured": true
+  },
+  {
+    "id": "ilan-00132",
+    "title": "Polatlı'da Geniş 4+1 Müstakil",
+    "price_raw": "6.000 TL/ay",
+    "location_raw": "Polatlı, Ankara",
+    "description": "Bahçeli müstakil ev, 4+1, kömür sobası, geniş avlu. Şehir merkezine 45 dk. Huzurlu köy hayatı arayanlar için.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
+    "image_count": 2,
+    "posted_date": "2026-04-10",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "İbrahim Çalışkan",
+    "views": 41,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00133",
+    "title": "Buca'da Yeni Binada 2+1",
+    "price_raw": "7.800 TL/ay",
+    "location_raw": "Buca, İzmir",
+    "description": "5 yıllık bina, kombili, balkonlu, eşyasız. Pazara ve okullara yakın. Sakin bir sokak üzerinde.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
+    "image_count": 3,
+    "posted_date": "2026-04-19",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Gülşen Aydın",
+    "views": 215,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00134",
+    "title": "Mudanya Sahilinde 1+1 Tatil Dairesi",
+    "price_raw": "9.000 TL / ay",
+    "location_raw": "Mudanya, Bursa",
+    "description": "Denize 100 metre, eşyalı, klimalı, balkon. Yazlık olarak da kullanılabilir. Vapur iskelesine yürüme mesafesi.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg"
+    ],
+    "image_count": 4,
+    "posted_date": "2026-04-21",
+    "source": "emlakjet",
+    "publisher_type": "owner",
+    "publisher_name": "Cenk Karabulut",
+    "views": 318,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00135",
+    "title": "Manavgat'ta Bahçeli 3+1",
+    "price_raw": "8.200 TL/Ay",
+    "location_raw": "Manavgat, Antalya",
+    "description": "Özel bahçeli, müstakil kullanım, doğalgaz yok-kombi var. Şelale ve nehre yakın turistik bölge. Uzun dönem kiralık.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
+    "image_count": 2,
+    "posted_date": "2026-04-14",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Recep Topal",
+    "views": 127,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00136",
+    "title": "Kadıköy Moda'da 1+1 Stüdyo",
+    "price_raw": "15.500TL/ay",
+    "location_raw": "Kadıköy, İstanbul",
+    "description": "Moda sahiline 3 dakika yürüyüş. Full eşyalı, smart TV, çalışma masası. Genç profesyoneller ve çiftler için ideal.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
+    "image_count": 3,
+    "posted_date": "2026-04-22",
+    "source": "emlakjet",
+    "publisher_type": "owner",
+    "publisher_name": "Burcu Demirtaş",
+    "views": 745,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00137",
+    "title": "Sincan'da Ekonomik 2+1",
+    "price_raw": "5.800 TL/ay",
+    "location_raw": "Sincan, Ankara",
+    "description": "Düşük kira, kombili, 2. kat asansörsüz. Toplu taşıma yakın. Uzun dönem kiracı aranıyor.",
+    "images": [
+      "img1.jpg"
+    ],
+    "image_count": 1,
+    "posted_date": "2026-04-06",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Veli Karaca",
+    "views": 89,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00138",
+    "title": "Çiğli'de Site İçi 3+1",
+    "price_raw": "10.200 TL / ay",
+    "location_raw": "Çiğli, İzmir",
+    "description": "Güvenlikli site, çocuk parkı, otopark. Kombili, eşyasız, 4. kat asansörlü. İzmir'in gelişen ilçesinde yatırımlık bölge.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg"
+    ],
+    "image_count": 4,
+    "posted_date": "2026-04-18",
+    "source": "hepsiemlak",
+    "publisher_type": "agent",
+    "publisher_name": "Çiğli Konut Emlak",
+    "views": 334,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00139",
+    "title": "Bursa Merkez Osmangazi'de 2+1",
+    "price_raw": "8.000TL/ay",
+    "location_raw": "Osmangazi, Bursa",
+    "description": "Şehrin kalbinde, çarşıya 5 dakika, kombili, eşyasız. Eski bina ama bakımlı. Uzun dönem için uygun.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
+    "image_count": 2,
+    "posted_date": "2026-04-13",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Nesrin Koç",
+    "views": 167,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00140",
+    "title": "Finike'de Deniz Kenarı 2+1",
+    "price_raw": "7.500 TL/Ay",
+    "location_raw": "Finike, Antalya",
+    "description": "Sahile sıfır, eski bina ama temiz. Balkon, deniz manzarası. Sakin tatil beldesi. Yıllık kiralık.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
+    "image_count": 3,
+    "posted_date": "2026-04-09",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Adnan Sarı",
+    "views": 203,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00141",
+    "title": "Tuzla'da Sanayi Yakını 2+1",
+    "price_raw": "9.000 TL/ay",
+    "location_raw": "Tuzla, İstanbul",
+    "description": "Organize sanayi bölgesine 10 dk. Kombili, eşyasız, otopark var. Çalışanlar için uygun fiyat.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
+    "image_count": 2,
+    "posted_date": "2026-04-15",
+    "source": "emlakjet",
+    "publisher_type": "owner",
+    "publisher_name": "Ertan Bulut",
+    "views": 112,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00142",
+    "title": "Pursaklar'da Yeni 3+1 Daire",
+    "price_raw": "9.500 TL/ay",
+    "location_raw": "Pursaklar, Ankara",
+    "description": "Yeni bina, beyaz eşyalı, balkon, güvenlikli site. Metro hattına 15 dk. Aile için ideal.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg"
+    ],
+    "image_count": 4,
+    "posted_date": "2026-04-20",
+    "source": "hepsiemlak",
+    "publisher_type": "agent",
+    "publisher_name": "Pursaklar Emlak",
+    "views": 421,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00143",
+    "title": "Selçuk'ta Tarihi Dokuya Yakın 1+1",
+    "price_raw": "5.500 TL / ay",
+    "location_raw": "Selçuk, İzmir",
+    "description": "Efes antik kenti yakını, restore edilmiş taş ev. Turizm bölgesinde sakin yaşam. Yıllık kiralık, kısa dönem müzakereye açık.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
+    "image_count": 2,
+    "posted_date": "2026-04-04",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Tomris Aksoy",
+    "views": 289,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00144",
+    "title": "Nilüfer Özlüce'de Lüks 3+1",
+    "price_raw": "14.500 TL/ay",
+    "location_raw": "Nilüfer, Bursa",
+    "description": "Özlüce'nin prestijli sitesinde, full eşyalı, 2 banyo, geniş teras. Spor salonu ve yüzme havuzu. AVM'ye 5 dakika.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg",
+      "img5.jpg"
+    ],
+    "image_count": 5,
+    "posted_date": "2026-04-21",
+    "source": "hepsiemlak",
+    "publisher_type": "agent",
+    "publisher_name": "Bursa Lüks Konut",
+    "views": 567,
+    "is_featured": true
+  },
+  {
+    "id": "ilan-00145",
+    "title": "Kas'ta Deniz Manzaralı Butik Daire",
+    "price_raw": "12.000 TL/Ay",
+    "location_raw": "Kaş, Antalya",
+    "description": "Eşsiz deniz ve ada manzarası. 1+1 butik daire, taş bina, tamamen restore. Dalış ve yat turizminin merkezi. Yıllık kiracı tercih edilir.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
+    "image_count": 3,
+    "posted_date": "2026-04-17",
+    "source": "emlakjet",
+    "publisher_type": "owner",
+    "publisher_name": "Duygu Aras",
+    "views": 632,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00146",
+    "title": "Pendik Yeni Şehir'de 2+1",
+    "price_raw": "11.000 TL/ay",
+    "location_raw": "Pendik, İstanbul",
+    "description": "Marmaray istasyonuna 5 dakika. Kombili, balkonlu, eşyasız. Bina 3 yıllık, asansörlü. Anadolu yakasının ulaşım merkezi.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
+    "image_count": 3,
+    "posted_date": "2026-04-20",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Yusuf Erdoğan",
+    "views": 388,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00147",
+    "title": "Gölbaşı'nda Göl Manzaralı 2+1",
+    "price_raw": "7.200 TL/ay",
+    "location_raw": "Gölbaşı, Ankara",
+    "description": "Eymir gölüne 2 km. Sakin mahalle, hava temiz. Kombili, eşyasız, otopark var. Doğa seven aileler için.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
+    "image_count": 2,
+    "posted_date": "2026-04-11",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Leyla Yıldız",
+    "views": 174,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00148",
+    "title": "Tire'de Geniş Müstakil 3+1",
+    "price_raw": "5.000 TL/ay",
+    "location_raw": "Tire, İzmir",
+    "description": "Müstakil köy evi, büyük bahçe, kuyulu su. İzmir merkezine 50 dk. Organik tarım yapılabilir. Sessiz köy hayatı.",
+    "images": [
+      "img1.jpg"
+    ],
+    "image_count": 1,
+    "posted_date": "2026-03-25",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Fikret Özkan",
+    "views": 53,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00149",
+    "title": "Gemlik Kurşunlu'da 2+1",
+    "price_raw": "6.500 TL/ay",
+    "location_raw": "Gemlik, Bursa",
+    "description": "Zeytinlikler arasında, sakin semt. Doğalgaz, kombili. Denize 500 metre. Emekliler için ideal.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
+    "image_count": 2,
+    "posted_date": "2026-04-08",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Rıfat Uçar",
+    "views": 96,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00150",
+    "title": "Side'de Resort Site İçi 1+1",
+    "price_raw": "14.000 TL / Ay",
+    "location_raw": "Manavgat, Antalya",
+    "description": "Resort kalitesinde site, 3 havuz, restoran, SPA. Tam eşyalı. Antik tiyatroya yürüme mesafesi. Yabancı kiracıya da uygun.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg",
+      "img5.jpg"
+    ],
+    "image_count": 5,
+    "posted_date": "2026-04-22",
+    "source": "hepsiemlak",
+    "publisher_type": "agent",
+    "publisher_name": "Side Luxury Homes",
+    "views": 1120,
+    "is_featured": true
+  },
+  {
+    "id": "ilan-00151",
+    "title": "Sultanbeyli'de Uygun 3+1",
+    "price_raw": "10.500 TL/ay",
+    "location_raw": "Sultanbeyli, İstanbul",
+    "description": "Merkezi konum, kombili, eşyasız, 2. kat. Ulaşım imkânları iyi. Geniş aile için uygun kiralık.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
+    "image_count": 2,
+    "posted_date": "2026-04-16",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Cafer Arslan",
+    "views": 143,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00152",
+    "title": "Beypazarı'nda Tarihi Konak",
+    "price_raw": "4.500 TL/ay",
+    "location_raw": "Beypazarı, Ankara",
+    "description": "Restore edilmiş tarihi Beypazarı konağı. 3+1, ahşap işçilik, taş duvar. Çok özgün bir yaşam alanı. Fotoğraf meraklılarına.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
+    "image_count": 3,
+    "posted_date": "2026-04-03",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Saadet Kuzu",
+    "views": 511,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00153",
+    "title": "Urla Bağlararası'nda 2+1 Villa",
+    "price_raw": "18.000 TL/ay",
+    "location_raw": "Urla, İzmir",
+    "description": "Bağ evi konforunda villa. Özel bahçe, barbekü alanı, küçük havuz. İzmir merkezine 35 dk. Doğa içinde tam bağımsız yaşam.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg"
+    ],
+    "image_count": 4,
+    "posted_date": "2026-04-19",
+    "source": "emlakjet",
+    "publisher_type": "owner",
+    "publisher_name": "Figen Özdoğan",
+    "views": 824,
+    "is_featured": true
+  },
+  {
+    "id": "ilan-00154",
+    "title": "İnegöl Mobilyacılar Bölgesinde 2+1",
+    "price_raw": "6.000 TL/ay",
+    "location_raw": "İnegöl, Bursa",
+    "description": "Sanayi ve mobilya bölgesine yakın. Kombili, 3. kat asansörsüz. Çalışan aileler için ekonomik seçenek.",
+    "images": [
+      "img1.jpg"
+    ],
+    "image_count": 1,
+    "posted_date": "2026-04-07",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Salim Yıldırım",
+    "views": 77,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00155",
+    "title": "Serik'te Tatil Sitesinde 1+1",
+    "price_raw": "9.800 TL/Ay",
+    "location_raw": "Serik, Antalya",
+    "description": "Belek'e 10 dk, golf sahalarına yakın. Havuzlu site, tam eşyalı. Kısa ve uzun dönem müzakereye açık.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
+    "image_count": 3,
+    "posted_date": "2026-04-15",
+    "source": "hepsiemlak",
+    "publisher_type": "agent",
+    "publisher_name": "Antalya Golf Homes",
+    "views": 466,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00156",
+    "title": "Zeytinburnu'nda 2+1 Kiralık",
+    "price_raw": "12.000 TL/ay",
+    "location_raw": "Zeytinburnu, İstanbul",
+    "description": "Metro ve tramvay duraklarına 3 dakika. Eşyasız, kombili, balkonlu. Bina 7 yıllık asansörlü. Merkezi İstanbul'da uygun fiyat.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg"
+    ],
+    "image_count": 3,
+    "posted_date": "2026-04-17",
+    "source": "emlakjet",
+    "publisher_type": "owner",
+    "publisher_name": "Semra Kılıç",
+    "views": 529,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00157",
+    "title": "Elmadağ'da Dağ Eteğinde 3+1",
+    "price_raw": "7.500 TL/ay",
+    "location_raw": "Elmadağ, Ankara",
+    "description": "Şehir gürültüsünden uzak, temiz hava. Müstakil bina, büyük bahçe, kömür ısıtma. Ankara'ya 40 dk.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
+    "image_count": 2,
+    "posted_date": "2026-04-01",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Niyazi Başaran",
+    "views": 62,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00158",
+    "title": "Foça'da Balıkçı Evleri Arasında 1+1",
+    "price_raw": "8.500 TL / ay",
+    "location_raw": "Foça, İzmir",
+    "description": "Tarihi Foça'da sahile 50 metre, taş örgülü müstakil ev. 1+1, küçük avlu, barbekü. Fotoğraf ve sanat severler için eşsiz.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg",
+      "img3.jpg",
+      "img4.jpg"
+    ],
+    "image_count": 4,
+    "posted_date": "2026-04-16",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Güven Altan",
+    "views": 714,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00159",
+    "title": "Kestel'de Bahçeli 3+1",
+    "price_raw": "7.800 TL/ay",
+    "location_raw": "Kestel, Bursa",
+    "description": "Özel bahçeli, müstakil girişli. Doğalgaz kombili. Uludağ'a 25 km. Kış aylarında karlı manzara. Sakin aile ortamı.",
+    "images": [
+      "img1.jpg",
+      "img2.jpg"
+    ],
+    "image_count": 2,
+    "posted_date": "2026-04-12",
+    "source": "hepsiemlak",
+    "publisher_type": "owner",
+    "publisher_name": "Tuncay Eroğlu",
+    "views": 138,
+    "is_featured": false
+  },
+  {
+    "id": "ilan-00160",
+    "title": "Kumluca'da Sera Bölgesi Yakını 2+1",
+    "price_raw": "5.200 TL/Ay",
+    "location_raw": "Kumluca, Antalya",
+    "description": "Tarım işçileri ve aileleri için uygun fiyat. Kombili, bahçeli, temiz bina. Denize 8 km. Uzun dönem kiralık.",
+    "images": [
+      "img1.jpg"
+    ],
+    "image_count": 1,
+    "posted_date": "2026-03-29",
+    "source": "sahibinden",
+    "publisher_type": "owner",
+    "publisher_name": "Kamuran Demir",
+    "views": 34,
+    "is_featured": false
   }
 ]
