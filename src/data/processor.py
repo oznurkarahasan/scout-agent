@@ -17,16 +17,35 @@ class DataProcessor:
             raw_ads = json.load(f)
             
         normalized_ads = []
+        seen_ads = set()
+        
         for ad in raw_ads:
-            # Clean Price: "12.500 TL/ay" -> 12500
+            # Simple De-duplication based on title and description snippet
+            # This handles ads with different IDs but same content
+            ad_fingerprint = (ad['title'].strip().lower(), ad.get('price', 0), ad.get('price_raw', ''))
+            if ad_fingerprint in seen_ads:
+                continue
+            seen_ads.add(ad_fingerprint)
+            # Clean Price: Support both numeric 'price' and string 'price_raw'
             price_numeric = 0
-            if 'price' in ad and isinstance(ad['price'], (int, float)):
+            if ad.get('price', 0) > 0:
                 price_numeric = int(ad['price'])
             else:
-                price_str = ad.get('price_raw', '0').replace('.', '').replace(',', '')
+                # Fallback 1: price_raw
+                price_str = str(ad.get('price_raw', '0')).replace('.', '').replace(',', '')
                 match = re.search(r'(\d+)', price_str)
-                if match:
+                if match and int(match.group(1)) > 0:
                     price_numeric = int(match.group(1))
+                else:
+                    # Fallback 2: Check title for price patterns like "2.050.000 TL"
+                    title_prices = re.findall(r'(\d{1,3}(?:\.\d{3})+)\s*[Tt][Ll]', ad['title'])
+                    if title_prices:
+                        price_numeric = int(title_prices[-1].replace('.', ''))
+                    else:
+                        # Fallback 3: Check description
+                        desc_prices = re.findall(r'(\d{1,3}(?:\.\d{3})+)\s*[Tt][Ll]', ad.get('description', ''))
+                        if desc_prices:
+                            price_numeric = int(desc_prices[-1].replace('.', ''))
 
             # Clean Location
             location_parts = ad.get('location_raw', 'Bilinmiyor, Bilinmiyor').split(',')

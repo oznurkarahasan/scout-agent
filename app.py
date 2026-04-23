@@ -68,7 +68,6 @@ if st.sidebar.button("🔄 Veri Setini İşle", use_container_width=True):
         st.rerun()
 
 st.sidebar.subheader("🏠 Emlak Bilgileri")
-target_property_type = st.sidebar.selectbox("Emlak Tipi", ["Hepsi", "Konut", "Arsa", "İşyeri"])
 target_listing_type = st.sidebar.radio("İlan Tipi", ["Hepsi", "Kiralık", "Satılık"], horizontal=True)
 
 st.sidebar.subheader("💰 Fiyat Aralığı (TL)")
@@ -197,12 +196,21 @@ engine.prepare(priorities)
 scored_ads = []
 for ad in ads:
     # --- Hard Filters ---
-    if target_property_type != "Hepsi" and ad.get('property_type') != target_property_type:
-        continue
-    if target_listing_type != "Hepsi" and ad.get('listing_type') != target_listing_type:
-        continue
+    # 1. Listing Type (Kiralık/Satılık)
+    if target_listing_type != "Hepsi":
+        if ad.get('listing_type') != target_listing_type:
+            continue
+            
+    # 2. Room Count (Strict Filter)
+    if "Hepsi" not in target_rooms:
+        found_rooms = re.findall(r'\d\+\d', ad['title'])
+        if not found_rooms or found_rooms[0] not in target_rooms:
+            continue
     
     # --- Scoring ---
+    if ad.get('price', 0) == 0:
+        continue
+        
     score, sim, fuzzy_inputs = calculate_ad_score(ad, min_price, max_price, target_city, target_district, target_rooms, engine)
     ad_copy = ad.copy()
     ad_copy['scout_score'] = score
@@ -229,7 +237,9 @@ for ad in scored_ads[:20]: # Show top 20
             <div style="flex: 4;">
                 <div class="source-badge {source_class}">{ad['source']}</div>
                 <h2 style="margin: 5px 0; color: #1a1a1a;">{ad['title']}</h2>
-                <div class="price-tag">{ad['price']:,} TL <span style="font-size: 14px; color: #666;">/ ay</span> | {ad['area_m2']} m²</div>
+                <div class="price-tag">
+                    {ad['price']:,} TL {f'<span style="font-size: 14px; color: #666;">/ ay</span>' if ad.get('listing_type') == 'Kiralık' else ''} | {ad['area_m2']} m²
+                </div>
                 <div class="meta-info">
                     📍 {ad['district']}, {ad['city']} | 📅 {ad['days_since_posted']} gün önce
                 </div>
