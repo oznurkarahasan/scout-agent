@@ -31,7 +31,7 @@ Scout Agent is an AI-powered real estate assistant that moves beyond rigid filte
 
 1. Clone repo
 ```bash
-git clone https://github.com/yourusername/scout-agent.git
+git clone https://github.com/oznurkarahasan/scout-agent.git
 cd scout-agent
 ```
 2. Setup env
