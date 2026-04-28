@@ -171,15 +171,13 @@ def calculate_ad_score(ad, min_p, max_p, target_city, target_district, target_ro
     # d. Quality Score (0-10)
     q_score = min(10, ad['image_count'] * 2 + (1 if len(ad['description']) > 150 else 0))
     
-    # d. Room Match (Bonus/Penalty)
-    # Extract rooms from title (e.g. "3+1" from "Kadıköy'de 3+1...")
-    m_score = 5 # Neutral base
+    # d. Room Match — hard filter already eliminates based on room count, generating a soft signal here
+    # Exact match for single preference = 10, multiple preferences = 7 (partial flexibility)
+    m_score = 5  # neutral: if "Hepsi" (All) is selected or no room info in title
     if "Hepsi" not in target_rooms:
         found_rooms = re.findall(r'\d\+\d', ad['title'])
         if found_rooms and found_rooms[0] in target_rooms:
-            m_score = 10
-        elif found_rooms:
-            m_score = 0 # Wrong room count
+            m_score = 10 if len(target_rooms) == 1 else 7
     
     # Fuzzy Compute
     inputs = {

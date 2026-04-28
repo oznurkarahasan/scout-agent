@@ -90,13 +90,15 @@ class ScoutFuzzyEngine:
         rules[-1].weight = w_m
 
         # --- Interaction / Override Rules ---
-        # If Price is priority 1.0 and it's expensive, even a "yakin" location cannot save it.
-        rules.append(ctrl.Rule(self.price['pahali'] & self.location['yakin'], self.score['dusuk']))
-        rules[-1].weight = w_p
-
-        # If Location is priority 1.0 and it's near, we can ignore a slightly bad price.
-        rules.append(ctrl.Rule(self.location['yakin'] & self.price['pahali'], self.score['orta']))
-        rules[-1].weight = w_l
+        # expensive & close → whichever priority is dominant determines it
+        # If Price is priority: low (expensive is unforgivable)
+        # If Location is priority: medium (close location partially compensates for expensive)
+        if w_p >= w_l:
+            rules.append(ctrl.Rule(self.price['pahali'] & self.location['yakin'], self.score['dusuk']))
+            rules[-1].weight = w_p
+        else:
+            rules.append(ctrl.Rule(self.price['pahali'] & self.location['yakin'], self.score['orta']))
+            rules[-1].weight = w_l
 
         return rules
 
@@ -119,5 +121,7 @@ class ScoutFuzzyEngine:
         try:
             self.scout_sim.compute()
             return self.scout_sim.output['suitability_score'], self.scout_sim
-        except:
+        except Exception as e:
+            import streamlit as st
+            st.warning(f"Fuzzy hesaplama hatası: {e} | Inputs: {inputs}")
             return 0, None
