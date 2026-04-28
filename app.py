@@ -61,8 +61,12 @@ st.sidebar.title("🏢 Arama Filtreleri")
 if st.sidebar.button("🔄 Veri Setini İşle", use_container_width=True):
     with st.spinner("🚀 Yerel veri seti işleniyor..."):
         import subprocess
+        import sys
         # Run only processor on local dataset
-        subprocess.run([".\\venv\\Scripts\\python.exe", "src/data/processor.py"], capture_output=True)
+        # windows
+        # subprocess.run([".\\venv\\Scripts\\python.exe", "src/data/processor.py"], capture_output=True)
+        # cross-platform
+        subprocess.run([sys.executable, "src/data/processor.py"], capture_output=True)
         st.cache_data.clear()
         st.success("Veri seti güncellendi!")
         st.rerun()
