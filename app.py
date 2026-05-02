@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import re
+import skfuzzy as fuzz
 from src.fuzzy.engine import ScoutFuzzyEngine
 
 # Page Config
@@ -75,11 +76,14 @@ st.sidebar.subheader("🏠 Emlak Bilgileri")
 target_listing_type = st.sidebar.radio("İlan Tipi", ["Hepsi", "Kiralık", "Satılık"], horizontal=True)
 
 st.sidebar.subheader("💰 Fiyat Aralığı (TL)")
-# Dynamic price ranges based on listing type
+# Slider aralıkları veri setindeki gerçek min/max'a göre ayarlandı.
+# Kiralık: 5k-25k TL (medyan ~9.8k), Satılık: 2.8M-11.2M TL (medyan ~5.8M)
 if target_listing_type == "Satılık":
-    min_price, max_price = st.sidebar.slider("Bütçe Seçimi", 500000, 20000000, (1000000, 5000000), step=100000)
-else:
-    min_price, max_price = st.sidebar.slider("Bütçe Seçimi", 2000, 100000, (10000, 30000), step=500)
+    min_price, max_price = st.sidebar.slider("Bütçe Seçimi", 2_800_000, 11_500_000, (3_000_000, 8_000_000), step=100_000)
+elif target_listing_type == "Kiralık":
+    min_price, max_price = st.sidebar.slider("Bütçe Seçimi", 5_000, 25_000, (7_000, 15_000), step=500)
+else:  # Hepsi — kiralık ve satılık birlikte gösteriliyorsa kiralık aralığı baz alınır
+    min_price, max_price = st.sidebar.slider("Bütçe Seçimi", 5_000, 25_000, (7_000, 15_000), step=500)
 
 st.sidebar.subheader("📐 Büyüklük (m²)")
 min_m2, max_m2 = st.sidebar.slider("Metrekare Aralığı", 0, 1000, (75, 200), step=5)
@@ -273,28 +277,72 @@ for ad in scored_ads[:20]: # Show top 20
     """, unsafe_allow_html=True)
 
     with st.expander("💡 Scout Mantığı: Bu Puan Nasıl Hesaplandı?"):
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown("**1. Adım: Bulanıklaştırma**")
-            st.caption("Veriler anlamlı kümelere atanıyor...")
-            p_val = ad['fuzzy_inputs']['price_suitability']
-            st.info(f"Fiyat Uygunluğu: %{p_val:.0f}")
-            s_val = ad['fuzzy_inputs']['size_suitability']
-            st.info(f"Boyut Uygunluğu: %{s_val:.0f}")
+        raw = ad['fuzzy_inputs']
 
-        with col2:
-            st.markdown("**2. Adım: Kural İşleme**")
-            st.caption("Önceliklerinize göre ağırlıklandırma...")
-            highest_priority = max(priorities, key=priorities.get)
-            priority_names = {"price": "Fiyat", "location": "Konum", "size": "m²", "quality": "Kalite", "llm": "LLM"}
-            st.warning(f"Baskın Öncelik: **{priority_names[highest_priority]}**")
-            st.write(f"Kurallar bu kriter etrafında şekillendi.")
+        # --- Yardımcı yapılar ---
+        _universes  = {'price_suitability': 100, 'location_score': 10,
+                       'listing_quality': 10, 'size_suitability': 100, 'llm_alignment': 10}
+        _prio_key   = {'price_suitability': 'price', 'location_score': 'location',
+                       'listing_quality': 'quality', 'size_suitability': 'size', 'llm_alignment': 'llm'}
+        _labels     = {'price_suitability': 'Fiyat', 'location_score': 'Konum',
+                       'listing_quality': 'Kalite', 'size_suitability': 'Boyut', 'llm_alignment': 'Metin (LLM)'}
+        _mf_objs    = {'price_suitability': (engine.price,    ['pahali','makul','ucuz']),
+                       'location_score':    (engine.location, ['uzak','orta','yakin']),
+                       'listing_quality':   (engine.quality,  ['zayif','iyi','mukemmel']),
+                       'size_suitability':  (engine.size,     ['kucuk','ideal','buyuk']),
+                       'llm_alignment':     (engine.llm_match,['uyumsuz','kismi','uyumlu'])}
 
-        with col3:
-            st.markdown("**3. Adım: Durulama**")
-            st.caption("Net bir puan üretiliyor...")
-            st.success(f"Sonuç: %{score:.1f}")
-            st.progress(score/100)
+        # --- Adım 1: Öncelik Ölçekleme ---
+        st.markdown("**① Öncelik Ölçekleme** — önceliği düşük kriter nötre çekilir, yüksek kriter aynen girer")
+        cols = st.columns(5)
+        scaled_vals = {}
+        for i, key in enumerate(raw):
+            umax    = _universes[key]
+            neutral = umax / 2.0
+            p       = priorities[_prio_key[key]]
+            s       = neutral + (raw[key] - neutral) * (p ** 1.5)
+            scaled_vals[key] = s
+            delta   = s - raw[key]
+            with cols[i]:
+                st.metric(
+                    label=f"{_labels[key]} (ö={p:.1f})",
+                    value=f"{s:.1f}",
+                    delta=f"{delta:+.1f}",
+                    delta_color="normal"
+                )
+
+        st.divider()
+
+        # --- Adım 2: Bulanıklaştırma ---
+        st.markdown("**② Bulanıklaştırma** — ölçekli değer hangi fuzzy kümeye ne kadar ait?")
+        cols2 = st.columns(5)
+        for i, key in enumerate(raw):
+            antecedent, mf_names = _mf_objs[key]
+            sv = scaled_vals[key]
+            with cols2[i]:
+                st.caption(_labels[key])
+                for name in mf_names:
+                    act = fuzz.interp_membership(antecedent.universe, antecedent[name].mf, sv)
+                    if act > 0.01:
+                        st.progress(float(act), text=f"{name}: {act:.2f}")
+
+        st.divider()
+
+        # --- Adım 3: Sonuç Kategorisi ---
+        st.markdown("**③ Mamdani Durulama → Nihai Skor**")
+        c1, c2 = st.columns([1, 2])
+        with c1:
+            st.metric("Uygunluk Skoru", f"%{score:.1f}")
+        with c2:
+            categories = [('cop','🔴 Çöp',(0,25)),('dusuk','🟠 Düşük',(15,55)),
+                          ('orta','🟡 Orta',(45,75)),('yuksek','🟢 Yüksek',(65,90)),
+                          ('efsane','⭐ Efsane',(83,100))]
+            dominant = max(
+                categories,
+                key=lambda c: fuzz.interp_membership(
+                    engine.score.universe, engine.score[c[0]].mf, score)
+            )
+            st.info(f"Skor **{dominant[1]}** kategorisine giriyor "
+                    f"(centroid defuzzification, aralık {dominant[2][0]}–{dominant[2][1]})")
 
 st.sidebar.info(f"💡 {len(ads)} ilan arasından en uyumlu olanlar Mamdani Bulanık Mantık motoru ile seçilmiştir.")
