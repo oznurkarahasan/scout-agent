@@ -1,7 +1,9 @@
 import streamlit as st
 import json
 import re
+import sys
 from src.fuzzy.engine import ScoutFuzzyEngine
+
 
 # Page Config
 st.set_page_config(page_title="Scout Agent: Profesyonel İlan Tarayıcı", layout="wide")
@@ -61,11 +63,13 @@ st.sidebar.title("🏢 Arama Filtreleri")
 if st.sidebar.button("🔄 Veri Setini İşle", use_container_width=True):
     with st.spinner("🚀 Yerel veri seti işleniyor..."):
         import subprocess
-        # Run only processor on local dataset
-        subprocess.run([".\\venv\\Scripts\\python.exe", "src/data/processor.py"], capture_output=True)
-        st.cache_data.clear()
-        st.success("Veri seti güncellendi!")
-        st.rerun()
+        result = subprocess.run([sys.executable, "src/data/processor.py"], capture_output=True, text=True)
+        if result.returncode != 0:
+            st.error(f"Hata:\n{result.stderr}")
+        else:
+            st.cache_data.clear()
+            st.success("Veri seti güncellendi!")
+           # st.rerun()
 
 st.sidebar.subheader("🏠 Emlak Bilgileri")
 target_listing_type = st.sidebar.radio("İlan Tipi", ["Hepsi", "Kiralık", "Satılık"], horizontal=True)
@@ -134,17 +138,15 @@ def calculate_suitability_ratios(ad, min_p, max_p, target_city, target_district,
         
     return p_suit, l_score, s_suit
 
-# 4. Scoring Logic with Range Support
 def calculate_ad_score(ad, min_p, max_p, target_city, target_district, target_rooms, engine):
     # a. Price Suitability
     if min_p <= ad['price'] <= max_p:
         p_suit = 100
     elif ad['price'] < min_p:
-        p_suit = 100 # Cheaper is still good!
+        p_suit = 100
     else:
-        # Over max: penalty
         p_suit = max(0, 100 - ((ad['price'] - max_p) / max_p) * 200)
-    
+
     # b. Location Score (0-10)
     l_score = 0
     if ad['city'] == target_city:
@@ -153,30 +155,29 @@ def calculate_ad_score(ad, min_p, max_p, target_city, target_district, target_ro
             l_score = 10
     else:
         l_score = 2
-        
+
     # c. Size Suitability (0-100)
-    # Calculate how close the m2 is to the target range [min_m2, max_m2]
     ad_m2 = ad.get('area_m2', 100)
     if min_m2 <= ad_m2 <= max_m2:
         s_suit = 100
     else:
-        # Distance penalty
         dist = min(abs(ad_m2 - min_m2), abs(ad_m2 - max_m2))
         s_suit = max(0, 100 - (dist / max(1, min_m2)) * 100)
 
     # d. Quality Score (0-10)
     q_score = min(10, ad['image_count'] * 2 + (1 if len(ad['description']) > 150 else 0))
-    
-    # d. Room Match (Bonus/Penalty)
-    # Extract rooms from title (e.g. "3+1" from "Kadıköy'de 3+1...")
-    m_score = 5 # Neutral base
+
+    # e. LLM + Room Match
+    llm_score = ad.get('llm_score', 5)
+    room_bonus = 0
     if "Hepsi" not in target_rooms:
         found_rooms = re.findall(r'\d\+\d', ad['title'])
         if found_rooms and found_rooms[0] in target_rooms:
-            m_score = 10
+            room_bonus = 3
         elif found_rooms:
-            m_score = 0 # Wrong room count
-    
+            room_bonus = -3
+    m_score = min(10, max(0, llm_score + room_bonus))
+
     # Fuzzy Compute
     inputs = {
         'price_suitability': p_suit,
@@ -185,7 +186,6 @@ def calculate_ad_score(ad, min_p, max_p, target_city, target_district, target_ro
         'size_suitability': s_suit,
         'llm_alignment': m_score
     }
-    
     score, sim = engine.compute(inputs)
     return score, sim, inputs
 
