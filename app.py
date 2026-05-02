@@ -119,7 +119,7 @@ ads = load_ads()
 def calculate_suitability_ratios(ad, min_p, max_p, target_city, target_district, min_m=0, max_m=1000):
     # Price
     if min_p <= ad['price'] <= max_p: p_suit = 100
-    elif ad['price'] < min_p: p_suit = 100
+    elif ad['price'] < min_p: p_suit = max(0, 100 - ((min_p - ad['price']) / min_p) * 150)
     else: p_suit = max(0, 100 - ((ad['price'] - max_p) / max_p) * 200)
     
     # Location
@@ -141,12 +141,15 @@ def calculate_suitability_ratios(ad, min_p, max_p, target_city, target_district,
 # 4. Scoring Logic with Range Support
 def calculate_ad_score(ad, min_p, max_p, target_city, target_district, target_rooms, engine):
     # a. Price Suitability
+    # Aralık içi: tam uyum. Aralık dışı (her iki yönde) yumuşak ceza.
     if min_p <= ad['price'] <= max_p:
         p_suit = 100
     elif ad['price'] < min_p:
-        p_suit = 100 # Cheaper is still good!
+        # Çok ucuz = aralığın altında; minimum'dan uzaklaştıkça ceza artar.
+        # Bu sayede 5k ile 9k aynı skoru almaz (ikisi de "ucuz" değil).
+        p_suit = max(0, 100 - ((min_p - ad['price']) / min_p) * 150)
     else:
-        # Over max: penalty
+        # Maksimum üstü: sert ceza
         p_suit = max(0, 100 - ((ad['price'] - max_p) / max_p) * 200)
     
     # b. Location Score (0-10)
