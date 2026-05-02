@@ -43,7 +43,7 @@ class ScoutFuzzyEngine:
         self.score['dusuk']  = fuzz.trimf(self.score.universe, [15, 35, 55])
         self.score['orta']   = fuzz.trimf(self.score.universe, [45, 60, 75])
         self.score['yuksek'] = fuzz.trimf(self.score.universe, [65, 80, 90])
-        self.score['efsane'] = fuzz.trimf(self.score.universe, [85, 100, 100])
+        self.score['efsane'] = fuzz.trimf(self.score.universe, [83, 100, 100])
 
     def _build_rules(self):
         rules = []
@@ -60,10 +60,10 @@ class ScoutFuzzyEngine:
         rules.append(ctrl.Rule(self.location['orta'],  self.score['orta']))
         rules.append(ctrl.Rule(self.location['uzak'],  self.score['dusuk']))
 
-        # kucuk/buyuk → orta: biraz dışı kötü değil, sadece ideal değil
+        # size_suitability 0-100: yüksek = iyi uyum, düşük = kötü uyum
         rules.append(ctrl.Rule(self.size['ideal'], self.score['yuksek']))
-        rules.append(ctrl.Rule(self.size['kucuk'], self.score['orta']))
-        rules.append(ctrl.Rule(self.size['buyuk'], self.score['orta']))
+        rules.append(ctrl.Rule(self.size['buyuk'], self.score['yuksek']))  # yüksek uyum → iyi
+        rules.append(ctrl.Rule(self.size['kucuk'], self.score['dusuk']))  # düşük uyum → kötü
 
         rules.append(ctrl.Rule(self.quality['mukemmel'], self.score['yuksek']))
         rules.append(ctrl.Rule(self.quality['iyi'],      self.score['orta']))
@@ -73,11 +73,13 @@ class ScoutFuzzyEngine:
         rules.append(ctrl.Rule(self.llm_match['kismi'],   self.score['orta']))
         rules.append(ctrl.Rule(self.llm_match['uyumsuz'], self.score['dusuk']))
 
-        # --- Kombinasyon kuralları: "efsane" (3 adet) ---
+        # --- Kombinasyon kuralları: "efsane" (5 adet) ---
         # Birden fazla kriter aynı anda iyiyse efsane tetiklenir
-        rules.append(ctrl.Rule(self.price['ucuz']    & self.location['yakin'], self.score['efsane']))
-        rules.append(ctrl.Rule(self.price['ucuz']    & self.size['ideal'],     self.score['efsane']))
-        rules.append(ctrl.Rule(self.location['yakin'] & self.size['ideal'],    self.score['efsane']))
+        rules.append(ctrl.Rule(self.price['ucuz']     & self.location['yakin'],  self.score['efsane']))
+        rules.append(ctrl.Rule(self.price['ucuz']     & self.size['ideal'],      self.score['efsane']))
+        rules.append(ctrl.Rule(self.location['yakin'] & self.size['ideal'],      self.score['efsane']))
+        rules.append(ctrl.Rule(self.llm_match['uyumlu'] & self.location['yakin'], self.score['efsane']))
+        rules.append(ctrl.Rule(self.price['ucuz']     & self.quality['mukemmel'], self.score['efsane']))
 
         # --- Kombinasyon kuralları: "cop" (2 adet) ---
         # Birden fazla kriter aynı anda kötüyse çöp tetiklenir
@@ -102,7 +104,11 @@ class ScoutFuzzyEngine:
         priority=0.0 → scaled = neutral      (tamamen nötr)
         """
         neutral = universe_max / 2.0
-        return neutral + (val - neutral) * priority
+        # Üstel katsayı: düşük öncelik girdiyi daha agresif nötre çeker,
+        # yüksek öncelik girdiyi neredeyse değiştirmez.
+        # priority=0.1 → 0.032x etki, priority=0.5 → 0.35x, priority=1.0 → 1.0x
+        effective = priority ** 1.5
+        return neutral + (val - neutral) * effective
 
     def prepare(self, priorities):
         """Öncelikleri saklar; ControlSystem ilk çağrıda bir kez derlenir."""
