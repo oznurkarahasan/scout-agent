@@ -57,10 +57,10 @@ if 'engine' not in st.session_state or not hasattr(st.session_state.engine, 'pre
 engine = st.session_state.engine
 
 # 2. Sidebar - Advanced Search Criteria
-st.sidebar.title("🏢 Arama Filtreleri")
+st.sidebar.title("Arama Filtreleri")
 
-if st.sidebar.button("🔄 Veri Setini İşle", use_container_width=True):
-    with st.spinner("🚀 Yerel veri seti işleniyor..."):
+if st.sidebar.button("Veri Setini İşle", use_container_width=True):
+    with st.spinner("Yerel veri seti işleniyor..."):
         import subprocess
         import sys
         # Run only processor on local dataset
@@ -72,10 +72,10 @@ if st.sidebar.button("🔄 Veri Setini İşle", use_container_width=True):
         st.success("Veri seti güncellendi!")
         st.rerun()
 
-st.sidebar.subheader("🏠 Emlak Bilgileri")
+st.sidebar.subheader("Emlak Bilgileri")
 target_listing_type = st.sidebar.radio("İlan Tipi", ["Hepsi", "Kiralık", "Satılık"], horizontal=True)
 
-st.sidebar.subheader("💰 Fiyat Aralığı (TL)")
+st.sidebar.subheader("Fiyat Aralığı (TL)")
 # Slider aralıkları veri setindeki gerçek min/max'a göre ayarlandı.
 # Kiralık: 5k-25k TL (medyan ~9.8k), Satılık: 2.8M-11.2M TL (medyan ~5.8M)
 if target_listing_type == "Satılık":
@@ -85,18 +85,18 @@ elif target_listing_type == "Kiralık":
 else:  # Hepsi — kiralık ve satılık birlikte gösteriliyorsa kiralık aralığı baz alınır
     min_price, max_price = st.sidebar.slider("Bütçe Seçimi", 5_000, 25_000, (7_000, 15_000), step=500)
 
-st.sidebar.subheader("📐 Büyüklük (m²)")
+st.sidebar.subheader("Büyüklük (m²)")
 min_m2, max_m2 = st.sidebar.slider("Metrekare Aralığı", 0, 1000, (75, 200), step=5)
 
-target_city = st.sidebar.selectbox("📍 Şehir", ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya"])
-target_district = st.sidebar.text_input("🔍 İlçe Ara", "")
+target_city = st.sidebar.selectbox("Şehir", ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya"])
+target_district = st.sidebar.text_input("İlçe Ara", "")
 
-st.sidebar.subheader("🛏️ Oda Sayısı")
+st.sidebar.subheader("Oda Sayısı")
 room_options = ["Hepsi", "1+1", "2+1", "3+1", "4+1"]
 target_rooms = st.sidebar.multiselect("Tercih Edilen Oda Sayısı", room_options, default=["Hepsi"])
 
 st.sidebar.divider()
-st.sidebar.title("🎯 Senin Önceliklerin")
+st.sidebar.title("Senin Önceliklerin")
 w_p = st.sidebar.slider("Fiyat Uyumluluğu", 0.0, 1.0, 0.9)
 w_l = st.sidebar.slider("Konum Skoru", 0.0, 1.0, 0.7)
 w_s = st.sidebar.slider("m² Uyumu", 0.0, 1.0, 0.6)
@@ -231,8 +231,8 @@ for ad in ads:
 scored_ads.sort(key=lambda x: x['scout_score'], reverse=True)
 
 # 6. UI Rendering
-st.title("🏹 Scout Agent: Zeki Emlak Bulucu")
-st.write(f"🔍 **{target_city}** bölgesinde **{min_price:,} - {max_price:,} TL** aralığında en iyi ilanlar taranıyor...")
+st.title("Scout Agent: Gayrimenkul Asistanı")
+st.write(f"**{target_city}** bölgesinde **{min_price:,} - {max_price:,} TL** aralığında en iyi ilanlar taranıyor...")
 
 for ad in scored_ads[:20]: # Show top 20
     score = ad['scout_score']
@@ -250,12 +250,12 @@ for ad in scored_ads[:20]: # Show top 20
                     {ad['price']:,} TL {f'<span style="font-size: 14px; color: #666;">/ ay</span>' if ad.get('listing_type') == 'Kiralık' else ''} | {ad['area_m2']} m²
                 </div>
                 <div class="meta-info">
-                    📍 {ad['district']}, {ad['city']} | 📅 {ad['days_since_posted']} gün önce
+                    {ad['district']}, {ad['city']} | {ad['days_since_posted']} gün önce
                 </div>
                 <div style="margin-top: 10px; display: flex; gap: 10px; font-size: 12px;">
-                    <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">💰 Fiyat: %{calculate_suitability_ratios(ad, min_price, max_price, target_city, target_district)[0]:.0f}</span>
-                    <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">📍 Konum: {calculate_suitability_ratios(ad, min_price, max_price, target_city, target_district)[1]}/10</span>
-                    <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">📐 Boyut: %{calculate_suitability_ratios(ad, min_price, max_price, target_city, target_district, min_m2, max_m2)[2]:.0f}</span>
+                    <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">Fiyat: %{calculate_suitability_ratios(ad, min_price, max_price, target_city, target_district)[0]:.0f}</span>
+                    <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">Konum: {calculate_suitability_ratios(ad, min_price, max_price, target_city, target_district)[1]}/10</span>
+                    <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">Boyut: %{calculate_suitability_ratios(ad, min_price, max_price, target_city, target_district, min_m2, max_m2)[2]:.0f}</span>
                 </div>
                 <p style="margin-top: 15px; font-size: 15px; line-height: 1.5; color: #444;">{ad['description'][:220]}...</p>
             </div>
@@ -267,7 +267,7 @@ for ad in scored_ads[:20]: # Show top 20
                 <div style="margin-top: 20px;">
                     <a href="{ad['url']}" target="_blank" style="text-decoration: none;">
                         <button style="width: 100%; padding: 10px; border: none; border-radius: 5px; background-color: #333; color: #fff; cursor: pointer; font-weight: bold;">
-                            İlana Git ↗
+                            İlana Git
                         </button>
                     </a>
                 </div>
@@ -276,7 +276,7 @@ for ad in scored_ads[:20]: # Show top 20
     </div>
     """, unsafe_allow_html=True)
 
-    with st.expander("💡 Scout Mantığı: Bu Puan Nasıl Hesaplandı?"):
+    with st.expander("Scout Mantığı: Bu Puan Nasıl Hesaplandı?"):
         raw = ad['fuzzy_inputs']
 
         # --- Yardımcı yapılar ---
@@ -293,7 +293,7 @@ for ad in scored_ads[:20]: # Show top 20
                        'llm_alignment':     (engine.llm_match,['uyumsuz','kismi','uyumlu'])}
 
         # --- Adım 1: Öncelik Ölçekleme ---
-        st.markdown("**① Öncelik Ölçekleme** — önceliği düşük kriter nötre çekilir, yüksek kriter aynen girer")
+        st.markdown("**01 Öncelik Ölçekleme** — önceliği düşük kriter nötre çekilir, yüksek kriter aynen girer")
         cols = st.columns(5)
         scaled_vals = {}
         for i, key in enumerate(raw):
@@ -314,7 +314,7 @@ for ad in scored_ads[:20]: # Show top 20
         st.divider()
 
         # --- Adım 2: Bulanıklaştırma ---
-        st.markdown("**② Bulanıklaştırma** — ölçekli değer hangi fuzzy kümeye ne kadar ait?")
+        st.markdown("**02 Bulanıklaştırma** — ölçekli değer hangi fuzzy kümeye ne kadar ait?")
         cols2 = st.columns(5)
         for i, key in enumerate(raw):
             antecedent, mf_names = _mf_objs[key]
@@ -329,14 +329,14 @@ for ad in scored_ads[:20]: # Show top 20
         st.divider()
 
         # --- Adım 3: Sonuç Kategorisi ---
-        st.markdown("**③ Mamdani Durulama → Nihai Skor**")
+        st.markdown("**03 Mamdani Durulama -> Nihai Skor**")
         c1, c2 = st.columns([1, 2])
         with c1:
             st.metric("Uygunluk Skoru", f"%{score:.1f}")
         with c2:
-            categories = [('cop','🔴 Çöp',(0,25)),('dusuk','🟠 Düşük',(15,55)),
-                          ('orta','🟡 Orta',(45,75)),('yuksek','🟢 Yüksek',(65,90)),
-                          ('efsane','⭐ Efsane',(83,100))]
+            categories = [('cop','Çöp',(0,25)),('dusuk','Düşük',(15,55)),
+                          ('orta','Orta',(45,75)),('yuksek','Yüksek',(65,90)),
+                          ('efsane','Efsane',(83,100))]
             dominant = max(
                 categories,
                 key=lambda c: fuzz.interp_membership(
@@ -345,4 +345,4 @@ for ad in scored_ads[:20]: # Show top 20
             st.info(f"Skor **{dominant[1]}** kategorisine giriyor "
                     f"(centroid defuzzification, aralık {dominant[2][0]}–{dominant[2][1]})")
 
-st.sidebar.info(f"💡 {len(ads)} ilan arasından en uyumlu olanlar Mamdani Bulanık Mantık motoru ile seçilmiştir.")
+st.sidebar.info(f"{len(ads)} ilan arasından en uyumlu olanlar Mamdani Bulanık Mantık motoru ile seçilmiştir.")
