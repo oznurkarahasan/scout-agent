@@ -1,6 +1,9 @@
-import json
+import sys
 import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+import json
 import re
+from src.llm.groq_client import analyze_listing
 
 class DataProcessor:
     def __init__(self, input_file="data/dataset.json"):
@@ -12,7 +15,13 @@ class DataProcessor:
         if not os.path.exists(self.input_file):
             print(f"{self.input_file} not found!")
             return False
-            
+        # Mevcut skorları yükle
+        existing_scores = {}
+        if os.path.exists(self.output_file):
+          with open(self.output_file, 'r', encoding='utf-8') as f:
+            old_ads = json.load(f)
+            existing_scores = {ad['id']: ad.get('llm_score', 5) for ad in old_ads}
+            print(f"Mevcut {len(existing_scores)} ilan skoru yüklendi.")    
         with open(self.input_file, 'r', encoding='utf-8') as f:
             raw_ads = json.load(f)
             
@@ -73,7 +82,16 @@ class DataProcessor:
                 "listing_type": ad.get('listing_type', 'Kiralık'),
                 "area_m2": ad.get('area_m2', 100)
             }
-            normalized_ads.append(normalized_ad)
+            # LLM Score (once, pre-computed)
+            if normalized_ad['id'] in existing_scores:
+              normalized_ad['llm_score'] = existing_scores[normalized_ad['id']]
+              print(f"Cache: {normalized_ad['title'][:40]} → {normalized_ad['llm_score']}")
+            else:
+              import time
+              llm_result = analyze_listing(normalized_ad['description'])
+              normalized_ad['llm_score'] = llm_result.get('llm_score', 5)
+              print(f"LLM scored: {normalized_ad['title'][:40]} → {normalized_ad['llm_score']}")
+              time.sleep(0.3)
             
         with open(self.output_file, 'w', encoding='utf-8') as f:
             json.dump(normalized_ads, f, ensure_ascii=False, indent=2)
