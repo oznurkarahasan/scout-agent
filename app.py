@@ -82,9 +82,6 @@ else: # Hepsi
 st.sidebar.subheader("📐 Büyüklük (m²)")
 min_m2, max_m2 = st.sidebar.slider("Metrekare Aralığı", 0, 1000, (75, 200), step=5)
 
-target_city = st.sidebar.selectbox("📍 Şehir", ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya"])
-target_district = st.sidebar.text_input("🔍 İlçe Ara", "")
-
 st.sidebar.subheader("🛏️ Oda Sayısı")
 room_options = ["Hepsi", "1+1", "2+1", "3+1", "4+1"]
 target_rooms = st.sidebar.multiselect("Tercih Edilen Oda Sayısı", room_options, default=["Hepsi"])
@@ -120,6 +117,19 @@ def get_file_mtime(path):
 
 # Single Source Loading
 ads = load_ads(get_file_mtime('data/normalized_ads.json'))
+
+city_options = sorted({ad.get('city', '').strip() for ad in ads if ad.get('city')})
+if not city_options:
+    city_options = ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya"]
+
+target_city = st.sidebar.selectbox("📍 Şehir", city_options)
+district_options = sorted({
+    ad.get('district', '').strip()
+    for ad in ads
+    if ad.get('city') == target_city and ad.get('district')
+})
+target_district = st.sidebar.selectbox("🔍 İlçe Seç", ["Hepsi"] + district_options)
+district_filter = "" if target_district == "Hepsi" else target_district
 
 # Helper for UI display
 def calculate_suitability_ratios(ad, min_p, max_p, target_city, target_district, min_m=0, max_m=1000):
@@ -215,7 +225,7 @@ for ad in ads:
             continue
     
     # 4. District (Hard Filter if provided)
-    if target_district and target_district.lower() not in ad.get('district', '').lower():
+    if district_filter and district_filter.lower() not in ad.get('district', '').lower():
         continue
 
     # 5. Price (Hard Range)
@@ -229,7 +239,7 @@ for ad in ads:
         continue
 
     # --- Scoring & Ranking ---
-    score, sim, fuzzy_inputs = calculate_ad_score(ad, min_price, max_price, target_city, target_district, target_rooms, engine)
+    score, sim, fuzzy_inputs = calculate_ad_score(ad, min_price, max_price, target_city, district_filter, target_rooms, engine)
     
     ad_copy = ad.copy()
     ad_copy['scout_score'] = score
@@ -267,9 +277,9 @@ else:
                         📍 {ad['district']}, {ad['city']} | 🛏️ {ad.get('room_count', 'Bilinmiyor')} | 📅 {ad['days_since_posted']} gün önce | 🏷️ {ad['city']}
                     </div>
                     <div style="margin-top: 10px; display: flex; gap: 10px; font-size: 12px;">
-                        <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">💰 Fiyat: %{calculate_suitability_ratios(ad, min_price, max_price, target_city, target_district)[0]:.0f}</span>
-                        <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">📍 Konum: {calculate_suitability_ratios(ad, min_price, max_price, target_city, target_district)[1]}/10</span>
-                        <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">📐 Boyut: %{calculate_suitability_ratios(ad, min_price, max_price, target_city, target_district, min_m2, max_m2)[2]:.0f}</span>
+                        <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">💰 Fiyat: %{calculate_suitability_ratios(ad, min_price, max_price, target_city, district_filter)[0]:.0f}</span>
+                        <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">📍 Konum: {calculate_suitability_ratios(ad, min_price, max_price, target_city, district_filter)[1]}/10</span>
+                        <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">📐 Boyut: %{calculate_suitability_ratios(ad, min_price, max_price, target_city, district_filter, min_m2, max_m2)[2]:.0f}</span>
                     </div>
                     <p style="margin-top: 15px; font-size: 15px; line-height: 1.5; color: #444;">{ad['description'][:220]}...</p>
                 </div>
