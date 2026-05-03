@@ -185,6 +185,21 @@ st.markdown("""
     p, label, .stMarkdown { color: #555 !important; }
     strong { color: #1a1a1a !important; }
 
+    /* Metrics: force visible numbers */
+    [data-testid="stMetricValue"],
+    [data-testid="stMetricDelta"],
+    [data-testid="stMetricLabel"] {
+        color: #000000 !important;
+    }
+    [data-testid="stMetricDelta"] svg {
+        fill: #000000 !important;
+    }
+
+    /* Hide listing title checkboxes inside cards */
+    .ad-card input[type="checkbox"] {
+        display: none !important;
+    }
+
     /* Scrollbar */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: #f5f5f0; }
