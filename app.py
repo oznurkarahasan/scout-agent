@@ -70,7 +70,7 @@ if st.sidebar.button("Veri Setini İşle", use_container_width=True):
         else:
             st.cache_data.clear()
             st.success("Veri seti güncellendi!")
-           # st.rerun()
+            st.rerun()
 
 st.sidebar.subheader("Emlak Bilgileri")
 target_listing_type = st.sidebar.radio("İlan Tipi", ["Hepsi", "Kiralık", "Satılık"], horizontal=True)

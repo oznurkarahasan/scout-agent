@@ -93,6 +93,8 @@ class DataProcessor:
               print(f"LLM scored: {normalized_ad['title'][:40]} → {normalized_ad['llm_score']}")
               time.sleep(0.3)
             
+            normalized_ads.append(normalized_ad)
+
         with open(self.output_file, 'w', encoding='utf-8') as f:
             json.dump(normalized_ads, f, ensure_ascii=False, indent=2)
         
