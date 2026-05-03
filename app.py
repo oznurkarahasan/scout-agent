@@ -308,28 +308,54 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-        with st.expander("💡 Scout Mantığı: Bu Puan Nasıl Hesaplandı?"):
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.markdown("**1. Adım: Bulanıklaştırma**")
-                st.caption("Veriler anlamlı kümelere atanıyor...")
-                p_val = ad['fuzzy_inputs']['price_suitability']
-                st.info(f"Fiyat Uygunluğu: %{p_val:.0f}")
-                s_val = ad['fuzzy_inputs']['size_suitability']
-                st.info(f"Boyut Uygunluğu: %{s_val:.0f}")
+        with st.expander("Scout Mantığı: Bu Puan Nasıl Hesaplandı?"):
+            st.caption("Bu skor basit bir ortalama değil; Mamdani bulanık mantık kuralları tüm girdileri birlikte değerlendirir.")
 
-            with col2:
-                st.markdown("**2. Adım: Kural İşleme**")
-                st.caption("Önceliklerinize göre ağırlıklandırma...")
+            with st.expander(f"Fiyat yüzdesi nasıl hesaplandı?  %{ad['fuzzy_inputs']['price_suitability']:.0f}"):
+                st.write(f"İlan fiyatı {ad['price']:,} TL olarak alındı.")
+                st.write(f"Seçtiğin aralık {min_price:,} - {max_price:,} TL idi.")
+                if min_price <= ad['price'] <= max_price:
+                    st.write("Fiyat aralığın içindeyse yüzde doğrudan yüksek tutuluyor.")
+                    st.write("Aralığın içinde ama daha düşük fiyatlı ilanlar biraz daha avantajlı sayılıyor.")
+                elif ad['price'] < min_price:
+                    st.write("Fiyat alt sınırın altındaysa uygun kabul ediliyor ve yüzde 100'e çekiliyor.")
+                else:
+                    st.write("Fiyat üst sınırın üstündeyse, üst limite ne kadar uzaksa yüzde o kadar düşüyor.")
+
+            with st.expander(f"Konum skoru nasıl hesaplandı?  {ad['fuzzy_inputs']['location_score']}/10"):
+                st.write(f"İlanın şehri: {ad['city']}.")
+                st.write(f"Seçtiğin şehir: {target_city}.")
+                if target_district and target_district != "Hepsi":
+                    st.write(f"Seçtiğin ilçe: {target_district}.")
+                if ad['city'] == target_city:
+                    st.write("Aynı şehirdeyse konum skoru yüksek başlar.")
+                    if target_district and target_district.lower() == get_district_name(ad.get('district', '')).lower():
+                        st.write("İlçe de aynıysa skor en yüksek seviyeye çıkar.")
+                    else:
+                        st.write("İlçe farklıysa şehir eşleşmesi korunur ama tam puan verilmez.")
+                else:
+                    st.write("Şehir farklıysa konum skoru düşük kalır.")
+
+            with st.expander(f"Boyut yüzdesi nasıl hesaplandı?  %{ad['fuzzy_inputs']['size_suitability']:.0f}"):
+                st.write(f"İlanın büyüklüğü: {ad.get('area_m2', 'Bilinmiyor')} m².")
+                st.write(f"Seçtiğin aralık: {min_m2} - {max_m2} m².")
+                if min_m2 <= ad.get('area_m2', 0) <= max_m2:
+                    st.write("Metrekare aralık içindeyse yüzde yüksek tutuluyor.")
+                    st.write("Aralık merkezine yakın ilanlar biraz daha avantajlı görünüyor.")
+                else:
+                    st.write("Aralık dışındaysa, sınırdan uzaklaştıkça yüzde düşüyor.")
+
+            with st.expander(f"Diğer girdiler nasıl hesaba katıldı?  Kalite {ad['fuzzy_inputs']['listing_quality']}/10, Metin {ad['fuzzy_inputs']['llm_alignment']}/10"):
+                st.write(f"Kalite skoru {ad['fuzzy_inputs']['listing_quality']}/10 olarak hesaplandı.")
+                st.write(f"Metin uyumu {ad['fuzzy_inputs']['llm_alignment']}/10 olarak hesaplandı.")
+                st.write("Bu değerler de fiyat ve konum gibi kurallara giriyor ve son skoru etkiliyor.")
+
+            with st.expander("Nihai skor nasıl oluştu?"):
+                st.write("Buradaki sonuç tek tek yüzdelerin toplanması değil.")
+                st.write("Mamdani bulanık mantık kuralları tüm girdileri birlikte değerlendirip tek bir son puan üretiyor.")
                 highest_priority = max(priorities, key=priorities.get)
-                priority_names = {"price": "Fiyat", "location": "Konum", "size": "m²", "quality": "Kalite", "llm": "LLM"}
-                st.warning(f"Baskın Öncelik: **{priority_names[highest_priority]}**")
-                st.write(f"Kurallar bu kriter etrafında şekillendi.")
-
-            with col3:
-                st.markdown("**3. Adım: Durulama**")
-                st.caption("Net bir puan üretiliyor...")
+                priority_names = {"price": "Fiyat", "location": "Konum", "size": "m²", "quality": "Kalite", "llm": "Metin"}
+                st.info(f"Senin ayarlarda baskın öncelik: {priority_names[highest_priority]}")
                 st.success(f"Sonuç: %{score:.1f}")
                 st.progress(score/100)
 
