@@ -118,13 +118,20 @@ def get_file_mtime(path):
 # Single Source Loading
 ads = load_ads(get_file_mtime('data/normalized_ads.json'))
 
+def get_district_name(raw_district):
+    district = (raw_district or "").strip()
+    if " - " in district:
+        district = district.split(" - ", 1)[0].strip()
+    district = re.split(r"\s{2,}", district)[0].strip()
+    return district
+
 city_options = sorted({ad.get('city', '').strip() for ad in ads if ad.get('city')})
 if not city_options:
     city_options = ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya"]
 
 target_city = st.sidebar.selectbox("📍 Şehir", city_options)
 district_options = sorted({
-    ad.get('district', '').strip()
+    get_district_name(ad.get('district', ''))
     for ad in ads
     if ad.get('city') == target_city and ad.get('district')
 })
@@ -142,7 +149,8 @@ def calculate_suitability_ratios(ad, min_p, max_p, target_city, target_district,
     l_score = 0
     if ad['city'] == target_city:
         l_score = 7
-        if target_district and target_district.lower() in ad['district'].lower(): l_score = 10
+        if target_district and target_district.lower() == get_district_name(ad.get('district', '')).lower():
+            l_score = 10
     else: l_score = 2
     
     # Size
@@ -168,7 +176,7 @@ def calculate_ad_score(ad, min_p, max_p, target_city, target_district, target_ro
     
     # b. Location Score (0-10)
     l_score = 8 # Base for matching city
-    if target_district and target_district.lower() in ad['district'].lower():
+    if target_district and target_district.lower() == get_district_name(ad.get('district', '')).lower():
         l_score = 10
         
     # c. Size Suitability (0-100)
@@ -225,7 +233,7 @@ for ad in ads:
             continue
     
     # 4. District (Hard Filter if provided)
-    if district_filter and district_filter.lower() not in ad.get('district', '').lower():
+    if district_filter and district_filter.lower() != get_district_name(ad.get('district', '')).lower():
         continue
 
     # 5. Price (Hard Range)
@@ -274,7 +282,7 @@ else:
                         {ad['price']:,} TL {f'<span style="font-size: 14px; color: #666;">/ ay</span>' if ad.get('listing_type') == 'Kiralık' else ''} | {ad['area_m2']} m²
                     </div>
                     <div class="meta-info">
-                        📍 {ad['district']}, {ad['city']} | 🛏️ {ad.get('room_count', 'Bilinmiyor')} | 📅 {ad['days_since_posted']} gün önce | 🏷️ {ad['city']}
+                        📍 {get_district_name(ad.get('district', ''))}, {ad['city']} | 🛏️ {ad.get('room_count', 'Bilinmiyor')} | 📅 {ad['days_since_posted']} gün önce | 🏷️ {ad['city']}
                     </div>
                     <div style="margin-top: 10px; display: flex; gap: 10px; font-size: 12px;">
                         <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">💰 Fiyat: %{calculate_suitability_ratios(ad, min_price, max_price, target_city, district_filter)[0]:.0f}</span>
