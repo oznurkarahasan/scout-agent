@@ -1,9 +1,14 @@
 import sys
 import os
+import io
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 import json
 import re
 from src.llm.groq_client import analyze_listing
+
+# Ensure UTF-8 encoding for console output (fix for Turkish/non-ASCII characters on Windows)
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 class DataProcessor:
     def __init__(self, input_file="data/dataset.json"):
