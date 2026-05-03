@@ -9,47 +9,209 @@ from src.fuzzy.engine import ScoutFuzzyEngine
 # Page Config
 st.set_page_config(page_title="Scout Agent: Profesyonel İlan Tarayıcı", layout="wide")
 
-# Custom CSS for Realistic Branding and Card Styling
 st.markdown("""
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700;1,900&family=Manrope:wght@300;400;500;600;700&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Manrope', sans-serif;
+        background-color: #f5f5f0 !important;
+        color: #1a1a1a !important;
+    }
+    .stApp { background: #f5f5f0 !important; }
+
+    /* Sidebar */
+    section[data-testid="stSidebar"] {
+        background: #ffffff !important;
+        border-right: 1px solid #e8e8e0 !important;
+        box-shadow: 2px 0 20px rgba(0,0,0,0.06);
+    }
+    section[data-testid="stSidebar"] * { color: #2a2a2a !important; }
+    section[data-testid="stSidebar"] .stButton button {
+        background: #c0392b !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        border: none !important;
+        border-radius: 4px !important;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-size: 12px !important;
+        box-shadow: 0 4px 15px rgba(192, 57, 43, 0.3);
+    }
+    section[data-testid="stSidebar"] .stButton button:hover {
+        background: #a93226 !important;
+        box-shadow: 0 6px 20px rgba(192, 57, 43, 0.4) !important;
+    }
+
+    /* Title */
+    h1 {
+        font-family: 'Playfair Display', serif !important;
+        font-size: 44px !important;
+        font-weight: 900 !important;
+        font-style: italic !important;
+        color: #1a1a1a !important;
+        letter-spacing: -1px !important;
+        line-height: 1.1 !important;
+    }
+    h2, h3 { font-family: 'Playfair Display', serif !important; font-style: italic !important; color: #1a1a1a !important; }
+
+    /* Cards */
     .ad-card {
-        background-color: #ffffff;
-        color: #333;
-        padding: 20px;
-        border-radius: 12px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        border-left: 10px solid #ddd;
-        transition: transform 0.2s;
+        background: #ffffff !important;
+        color: #1a1a1a !important;
+        padding: 28px !important;
+        border-radius: 8px !important;
+        margin-bottom: 16px !important;
+        border: none !important;
+        border-left: 5px solid #c0392b !important;
+        box-shadow: 0 2px 20px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.05) !important;
+        transition: all 0.25s ease;
     }
     .ad-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.12) !important;
+        border-left-color: #a93226 !important;
     }
+    .ad-card h2 {
+        color: #1a1a1a !important;
+        font-family: 'Manrope', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 17px !important;
+    }
+
+    /* Source badges */
     .source-badge {
-        padding: 4px 10px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: bold;
+        padding: 3px 12px;
+        border-radius: 3px;
+        font-size: 10px;
+        font-weight: 700;
         text-transform: uppercase;
-        margin-bottom: 8px;
+        letter-spacing: 1.5px;
+        margin-bottom: 10px;
         display: inline-block;
     }
-    .source-sahibinden { background-color: #ffe800; color: #000; }
-    .source-hepsiemlak { background-color: #e30613; color: #fff; }
-    .source-emlakjet { background-color: #0089cf; color: #fff; }
-    
+    .source-sahibinden { background: #fff3cd; color: #856404; }
+    .source-hepsiemlak { background: #fde8e8; color: #c0392b; }
+    .source-emlakjet { background: #e8f0fe; color: #1a56db; }
+
+    /* Score badge */
     .score-badge {
-        font-size: 28px;
-        font-weight: 800;
-        padding: 10px 20px;
-        border-radius: 8px;
+        font-family: 'Playfair Display', serif;
+        font-size: 38px;
+        font-weight: 700;
+        font-style: italic;
+        padding: 10px 18px;
+        border-radius: 6px;
     }
-    .green-badge { background-color: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
-    .red-badge { background-color: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
-    
-    .price-tag { font-size: 22px; font-weight: bold; color: #2c3e50; }
-    .meta-info { color: #7f8c8d; font-size: 14px; margin-top: 5px; }
+    .green-badge { background: #eafaf1; color: #1e8449; border: 2px solid #a9dfbf; }
+    .red-badge { background: #fdf0ef; color: #c0392b; border: 2px solid #f5b7b1; }
+
+    /* Price */
+    .price-tag {
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+        font-weight: 700;
+        font-style: italic;
+        color: #c0392b;
+    }
+    .meta-info { color: #888; font-size: 13px; margin-top: 5px; }
+
+    /* Tag pills (kart içi) */
+    .ad-card span {
+        background: #f8f8f5 !important;
+        color: #666 !important;
+        border: 1px solid #e0e0d8 !important;
+        border-radius: 4px !important;
+        font-size: 11px !important;
+    }
+
+    /* Expander */
+    .streamlit-expanderHeader {
+        background: #fafaf8 !important;
+        color: #c0392b !important;
+        border: 1px solid #e8e8e0 !important;
+        border-radius: 6px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+    }
+    .streamlit-expanderContent {
+        background: #fafaf8 !important;
+        border: 1px solid #e8e8e0 !important;
+    }
+
+    /* Sliders */
+    .stSlider > div > div > div > div { background: #c0392b !important; }
+
+    /* Input & Selectbox */
+    .stSelectbox > div > div,
+    .stTextInput > div > div > input,
+    .stMultiSelect > div > div,
+    div[data-baseweb="select"] > div {
+        background-color: #ffffff !important;
+        color: #1a1a1a !important;
+        border: 1px solid #e0e0d8 !important;
+        border-radius: 6px !important;
+    }
+    div[data-baseweb="select"] span,
+    div[data-baseweb="select"] input,
+    .stSelectbox > div > div > div,
+    .stMultiSelect > div > div > div {
+        color: #1a1a1a !important;
+    }
+    .stSelectbox svg, .stMultiSelect svg { fill: #888 !important; }
+
+    /* Multiselect tag - kırmızı, beyaz yazı */
+    [data-baseweb="tag"] {
+        background-color: #c0392b !important;
+        border: none !important;
+    }
+    [data-baseweb="tag"],
+    [data-baseweb="tag"] span,
+    [data-baseweb="tag"] * {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+    }
+
+    /* Dropdown liste */
+    [data-baseweb="popover"],
+    [data-baseweb="popover"] * { background-color: #ffffff !important; color: #1a1a1a !important; }
+    [data-baseweb="option"]:hover { background-color: #fdf0ef !important; }
+
+    /* Info/success */
+    .stInfo { background: #fdf0ef !important; border-left-color: #c0392b !important; color: #666 !important; }
+    .stSuccess { background: #eafaf1 !important; border-left-color: #1e8449 !important; }
+
+    /* General */
+    p, label, .stMarkdown { color: #555 !important; }
+    strong { color: #1a1a1a !important; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #f5f5f0; }
+    ::-webkit-scrollbar-thumb { background: #c0392b; border-radius: 2px; }
+            /* Expander içi text */
+    .streamlit-expanderContent p,
+    .streamlit-expanderContent label,
+    .streamlit-expanderContent div,
+    .streamlit-expanderContent span:not([data-baseweb="tag"]) {
+        color: #333 !important;
+    }
+    .streamlit-expanderContent .stInfo,
+    .streamlit-expanderContent .stWarning,
+    .streamlit-expanderContent .stSuccess {
+        color: #333 !important;
+    }
 </style>
+""", unsafe_allow_html=True)
+st.markdown("""
+<script>
+const observer = new MutationObserver(() => {
+    document.querySelectorAll('[data-baseweb="tag"] span').forEach(el => {
+        el.style.setProperty('color', '#ffffff', 'important');
+    });
+});
+observer.observe(document.body, { childList: true, subtree: true });
+</script>
 """, unsafe_allow_html=True)
 
 # 1. Initialize Engine
@@ -70,10 +232,10 @@ if st.sidebar.button("Veri Setini İşle", use_container_width=True):
         else:
             st.cache_data.clear()
             st.success("Veri seti güncellendi!")
-           # st.rerun()
+            st.rerun()
 
 st.sidebar.subheader("Emlak Bilgileri")
-target_listing_type = st.sidebar.radio("İlan Tipi", ["Hepsi", "Kiralık", "Satılık"], horizontal=True)
+target_listing_type = st.sidebar.radio("İlan Tipi", ["Kiralık", "Satılık"], horizontal=True)
 
 st.sidebar.subheader("Fiyat Aralığı (TL)")
 # Slider aralıkları veri setindeki gerçek min/max'a göre ayarlandı.
@@ -208,6 +370,9 @@ for ad in ads:
     if target_listing_type != "Hepsi":
         if ad.get('listing_type') != target_listing_type:
             continue
+    # 2. City (Hard Filter)
+    if ad.get('city') != target_city:
+     continue
             
     # 2. Room Count (Strict Filter)
     if "Hepsi" not in target_rooms:
@@ -232,6 +397,8 @@ scored_ads.sort(key=lambda x: x['scout_score'], reverse=True)
 # 6. UI Rendering
 st.title("Scout Agent: Gayrimenkul Asistanı")
 st.write(f"**{target_city}** bölgesinde **{min_price:,} - {max_price:,} TL** aralığında en iyi ilanlar taranıyor...")
+
+
 
 for ad in scored_ads[:20]: # Show top 20
     score = ad['scout_score']

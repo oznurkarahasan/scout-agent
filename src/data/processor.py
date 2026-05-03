@@ -57,9 +57,18 @@ class DataProcessor:
                             price_numeric = int(desc_prices[-1].replace('.', ''))
 
             # Clean Location
-            location_parts = ad.get('location_raw', 'Bilinmiyor, Bilinmiyor').split(',')
-            district = location_parts[0].strip()
-            city = location_parts[1].strip() if len(location_parts) > 1 else "Bilinmiyor"
+            location_raw = ad.get('location_raw', 'Bilinmiyor')
+            if ',' in location_raw:
+             parts = location_raw.split(',')
+             district = parts[0].strip()
+             city = parts[1].strip()
+            elif ' - ' in location_raw:
+               parts = location_raw.split(' - ')
+               district = parts[0].strip()
+               city = 'İstanbul'
+            else:
+              district = location_raw.strip()
+              city = 'Bilinmiyor'
 
             # Normalize published date to relative days (stub)
             days_since = 1 # Default
@@ -93,6 +102,8 @@ class DataProcessor:
               print(f"LLM scored: {normalized_ad['title'][:40]} → {normalized_ad['llm_score']}")
               time.sleep(0.3)
             
+            normalized_ads.append(normalized_ad)
+
         with open(self.output_file, 'w', encoding='utf-8') as f:
             json.dump(normalized_ads, f, ensure_ascii=False, indent=2)
         
