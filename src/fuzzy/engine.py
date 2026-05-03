@@ -65,38 +65,30 @@ class ScoutFuzzyEngine:
 
         # --- Aggressive Rules for High Priorities ---
         
+        # --- Aggressive Rules for High Priorities ---
+        
         # PRICE: If priority is high, "ucuz" should lead directly to Efsane/Yuksek
-        rules.append(ctrl.Rule(self.price['ucuz'], self.score['efsane']))
-        rules[-1].weight = w_p
-        rules.append(ctrl.Rule(self.price['pahali'], self.score['cop']))
-        rules[-1].weight = w_p * 1.5 # Extra penalty for expensive if price is priority
+        rules.append(ctrl.Rule(self.price['ucuz'], self.score['efsane'] % w_p))
+        rules.append(ctrl.Rule(self.price['pahali'], self.score['cop'] % (w_p * 1.5)))
 
         # LOCATION: If priority is high, "yakin" should boost significantly
-        rules.append(ctrl.Rule(self.location['yakin'], self.score['efsane']))
-        rules[-1].weight = w_l
-        rules.append(ctrl.Rule(self.location['uzak'], self.score['dusuk']))
-        rules[-1].weight = w_l
+        rules.append(ctrl.Rule(self.location['yakin'], self.score['efsane'] % w_l))
+        rules.append(ctrl.Rule(self.location['uzak'], self.score['dusuk'] % w_l))
 
         # SIZE:
-        rules.append(ctrl.Rule(self.size['ideal'], self.score['yuksek']))
-        rules[-1].weight = w_s
-        rules.append(ctrl.Rule(self.size['kucuk'] | self.size['buyuk'], self.score['dusuk']))
-        rules[-1].weight = w_s
+        rules.append(ctrl.Rule(self.size['ideal'], self.score['yuksek'] % w_s))
+        rules.append(ctrl.Rule(self.size['kucuk'] | self.size['buyuk'], self.score['dusuk'] % w_s))
 
         # QUALITY & LLM:
-        rules.append(ctrl.Rule(self.quality['mukemmel'], self.score['yuksek']))
-        rules[-1].weight = w_q
-        rules.append(ctrl.Rule(self.llm_match['uyumlu'], self.score['efsane']))
-        rules[-1].weight = w_m
+        rules.append(ctrl.Rule(self.quality['mukemmel'], self.score['yuksek'] % w_q))
+        rules.append(ctrl.Rule(self.llm_match['uyumlu'], self.score['efsane'] % w_m))
 
         # --- Interaction / Override Rules ---
         # If Price is priority 1.0 and it's expensive, even a "yakin" location cannot save it.
-        rules.append(ctrl.Rule(self.price['pahali'] & self.location['yakin'], self.score['dusuk']))
-        rules[-1].weight = w_p
+        rules.append(ctrl.Rule(self.price['pahali'] & self.location['yakin'], self.score['dusuk'] % w_p))
 
         # If Location is priority 1.0 and it's near, we can ignore a slightly bad price.
-        rules.append(ctrl.Rule(self.location['yakin'] & self.price['pahali'], self.score['orta']))
-        rules[-1].weight = w_l
+        rules.append(ctrl.Rule(self.location['yakin'] & self.price['pahali'], self.score['orta'] % w_l))
 
         return rules
 
