@@ -1,6 +1,8 @@
 import json
 import os
 import re
+import time
+from src.llm.groq_client import analyze_listing
 
 class DataProcessor:
     def __init__(self, input_file="data/dataset.json"):
@@ -39,6 +41,17 @@ class DataProcessor:
 
     def normalize(self):
         """Processes dataset.json and ads.json into normalized_ads.json for the app."""
+        # Mevcut skorları yükle (Cache mekanizması)
+        existing_scores = {}
+        if os.path.exists(self.output_file):
+            try:
+                with open(self.output_file, 'r', encoding='utf-8') as f:
+                    old_ads = json.load(f)
+                    existing_scores = {ad['id']: ad.get('llm_score', 5) for ad in old_ads}
+                    print(f"Mevcut {len(existing_scores)} ilan skoru yüklendi.")
+            except Exception as e:
+                print(f"Cache okuma hatası: {e}")
+
         raw_ads = []
         
         # Load from multiple sources
@@ -163,6 +176,17 @@ class DataProcessor:
                 "source": ad.get('source', 'Diğer'),
                 "url": ad.get('url', '#')
             }
+            
+            # LLM Score (Cache Kontrolü)
+            if normalized_ad['id'] in existing_scores:
+                normalized_ad['llm_score'] = existing_scores[normalized_ad['id']]
+                # print(f"Cache: {normalized_ad['title'][:40]} → {normalized_ad['llm_score']}")
+            else:
+                llm_result = analyze_listing(normalized_ad['description'])
+                normalized_ad['llm_score'] = llm_result.get('llm_score', 5)
+                print(f"LLM scored: {normalized_ad['title'][:40]} → {normalized_ad['llm_score']}")
+                time.sleep(0.3)
+                
             normalized_ads.append(normalized_ad)
             
         with open(self.output_file, 'w', encoding='utf-8') as f:

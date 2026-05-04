@@ -253,6 +253,7 @@ for ad in ads:
     ad_copy['scout_score'] = score
     ad_copy['fuzzy_sim'] = sim
     ad_copy['fuzzy_inputs'] = fuzzy_inputs
+    ad_copy['llm_score'] = ad.get('llm_score')
     scored_ads.append(ad_copy)
 
 # Sort Descending by Scout Score
@@ -271,6 +272,8 @@ else:
         is_green = score >= 50
         badge_color = "#28a745" if is_green else "#dc3545"
         source_class = f"source-{ad['source'].lower().replace(' ', '')}"
+        llm_score = ad.get('llm_score')
+        llm_score_text = f"{llm_score}/10" if isinstance(llm_score, (int, float)) else "Henüz yok"
         
         st.markdown(f"""
         <div class="ad-card" style="border-left-color: {badge_color};">
@@ -288,6 +291,7 @@ else:
                         <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">💰 Fiyat: %{calculate_suitability_ratios(ad, min_price, max_price, target_city, district_filter)[0]:.0f}</span>
                         <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">📍 Konum: {calculate_suitability_ratios(ad, min_price, max_price, target_city, district_filter)[1]}/10</span>
                         <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">📐 Boyut: %{calculate_suitability_ratios(ad, min_price, max_price, target_city, district_filter, min_m2, max_m2)[2]:.0f}</span>
+                        <span style="background: #f0f2f6; padding: 2px 8px; border-radius: 10px;">🧠 LLM: {llm_score_text}</span>
                     </div>
                     <p style="margin-top: 15px; font-size: 15px; line-height: 1.5; color: #444;">{ad['description'][:220]}...</p>
                 </div>
@@ -348,6 +352,10 @@ else:
             with st.expander(f"Diğer girdiler nasıl hesaba katıldı?  Kalite {ad['fuzzy_inputs']['listing_quality']}/10, Metin {ad['fuzzy_inputs']['llm_alignment']}/10"):
                 st.write(f"Kalite skoru {ad['fuzzy_inputs']['listing_quality']}/10 olarak hesaplandı.")
                 st.write(f"Metin uyumu {ad['fuzzy_inputs']['llm_alignment']}/10 olarak hesaplandı.")
+                if isinstance(llm_score, (int, float)):
+                    st.write(f"Gerçek LLM çıktısı olarak llm_score {llm_score}/10 kaydedilmiş.")
+                else:
+                    st.write("Bu kartta kaydedilmiş bir llm_score yok; LLM skoru üretme aşaması çalışmamış ya da veri setine yazılmamış olabilir.")
                 st.write("Bu değerler de fiyat ve konum gibi kurallara giriyor ve son skoru etkiliyor.")
 
             with st.expander("Nihai skor nasıl oluştu?"):

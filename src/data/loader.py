@@ -14,7 +14,10 @@ Yapılan dönüşümler:
 import json
 import re
 import os
+import time
 from datetime import date, datetime
+
+from src.llm.groq_client import analyze_listing
 
 
 # ──────────────────────────────────────────────
@@ -107,7 +110,7 @@ def normalize_ad(raw: dict) -> dict | None:
         print(f"  [WARN] {raw['id']} — tarih parse edilemedi, days_since_posted=0 atandı")
         days = 0
 
-    return {
+    normalized = {
         "id":               raw["id"],
         "title":            raw["title"].strip(),
         "price":            price,
@@ -121,6 +124,13 @@ def normalize_ad(raw: dict) -> dict | None:
         "source":           raw.get("source", "unknown"),
         "views":            int(raw.get("views", 0)),
     }
+
+    llm_result = analyze_listing(normalized["description"])
+    normalized["llm_score"] = llm_result.get("llm_score", 5)
+    normalized["llm_analysis"] = llm_result
+    time.sleep(0.4)
+
+    return normalized
 
 
 # ──────────────────────────────────────────────
