@@ -33,9 +33,9 @@ class ScoutFuzzyEngine:
         self.quality['iyi'] = fuzz.trimf(self.quality.universe, [3, 6, 9])
         self.quality['mukemmel'] = fuzz.trapmf(self.quality.universe, [8, 9, 10, 10])
 
-        self.size['kucuk'] = fuzz.trapmf(self.size.universe, [0, 0, 20, 45])
-        self.size['ideal'] = fuzz.trimf(self.size.universe, [35, 65, 95])
-        self.size['buyuk'] = fuzz.trapmf(self.size.universe, [80, 95, 100, 100])
+        # size_suitability: 100 = range merkezi, 0 = range kenarı
+        self.size['kucuk'] = fuzz.trapmf(self.size.universe, [0, 0, 25, 50])
+        self.size['ideal'] = fuzz.trapmf(self.size.universe, [40, 70, 100, 100])
 
         self.llm_match['uyumsuz'] = fuzz.trapmf(self.llm_match.universe, [0, 0, 2, 5])
         self.llm_match['kismi'] = fuzz.trimf(self.llm_match.universe, [4, 6, 8])
@@ -64,31 +64,27 @@ class ScoutFuzzyEngine:
         rules = []
 
         # --- Aggressive Rules for High Priorities ---
-        
-        # --- Aggressive Rules for High Priorities ---
-        
+
         # PRICE: If priority is high, "ucuz" should lead directly to Efsane/Yuksek
         rules.append(ctrl.Rule(self.price['ucuz'], self.score['efsane'] % w_p))
         rules.append(ctrl.Rule(self.price['pahali'], self.score['cop'] % (w_p * 1.5)))
 
         # LOCATION: If priority is high, "yakin" should boost significantly
         rules.append(ctrl.Rule(self.location['yakin'], self.score['efsane'] % w_l))
+        rules.append(ctrl.Rule(self.location['orta'], self.score['orta'] % w_l))
         rules.append(ctrl.Rule(self.location['uzak'], self.score['dusuk'] % w_l))
 
         # SIZE:
         rules.append(ctrl.Rule(self.size['ideal'], self.score['yuksek'] % w_s))
-        rules.append(ctrl.Rule(self.size['kucuk'] | self.size['buyuk'], self.score['dusuk'] % w_s))
+        rules.append(ctrl.Rule(self.size['kucuk'], self.score['dusuk'] % w_s))
 
         # QUALITY & LLM:
         rules.append(ctrl.Rule(self.quality['mukemmel'], self.score['yuksek'] % w_q))
         rules.append(ctrl.Rule(self.llm_match['uyumlu'], self.score['efsane'] % w_m))
 
         # --- Interaction / Override Rules ---
-        # If Price is priority 1.0 and it's expensive, even a "yakin" location cannot save it.
+        # Pahalı + yakın: fiyat önceliği baskın çıkar (w_p yüksekse dusuk, w_l yüksekse yakin→efsane kuralı kazanır)
         rules.append(ctrl.Rule(self.price['pahali'] & self.location['yakin'], self.score['dusuk'] % w_p))
-
-        # If Location is priority 1.0 and it's near, we can ignore a slightly bad price.
-        rules.append(ctrl.Rule(self.location['yakin'] & self.price['pahali'], self.score['orta'] % w_l))
 
         return rules
 

@@ -48,17 +48,21 @@ def _calculate_ad_score(
     else:
         p_suit = max(0, 70 - ((ad["price"] - max_p) / max_p) * 200)
 
-    # Location score (0-10)
-    l_score = 8
-    if target_district and target_district.lower() == _get_district_name(ad.get("district", "")).lower():
-        l_score = 10
+    # Location score (0-10): yakin=10, nötr=6, uzak=3
+    ad_district = _get_district_name(ad.get("district", "")).lower()
+    if not target_district:
+        l_score = 6  # ilçe filtresi yok: nötr
+    elif target_district.lower() == ad_district:
+        l_score = 10  # tam eşleşme: yakın
+    else:
+        l_score = 3   # farklı ilçe: uzak
 
-    # Size suitability (0-100)
+    # Size suitability (0-100): merkez=100, kenar=0
     ad_m2 = ad.get("area_m2", 100)
     if min_m2 <= ad_m2 <= max_m2:
         center = (min_m2 + max_m2) / 2
-        dist_from_center = abs(ad_m2 - center)
-        s_suit = 100 - (dist_from_center / ((max_m2 - min_m2 + 1) / 2)) * 20
+        half_range = max((max_m2 - min_m2) / 2, 1)
+        s_suit = max(0, 100 - (abs(ad_m2 - center) / half_range) * 100)
     else:
         s_suit = 0
 
