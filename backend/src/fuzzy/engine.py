@@ -33,9 +33,9 @@ class ScoutFuzzyEngine:
         self.quality['iyi'] = fuzz.trimf(self.quality.universe, [3, 6, 9])
         self.quality['mukemmel'] = fuzz.trapmf(self.quality.universe, [8, 9, 10, 10])
 
+        # size_suitability: 100 = range merkezi, 0 = range kenarı
         self.size['kucuk'] = fuzz.trapmf(self.size.universe, [0, 0, 25, 50])
-        self.size['ideal'] = fuzz.trimf(self.size.universe, [30, 55, 80])
-        self.size['buyuk'] = fuzz.trapmf(self.size.universe, [90, 95, 100, 100])
+        self.size['ideal'] = fuzz.trapmf(self.size.universe, [40, 70, 100, 100])
 
         self.llm_match['uyumsuz'] = fuzz.trapmf(self.llm_match.universe, [0, 0, 2, 5])
         self.llm_match['kismi'] = fuzz.trimf(self.llm_match.universe, [4, 6, 8])
@@ -77,7 +77,7 @@ class ScoutFuzzyEngine:
 
         # SIZE:
         rules.append(ctrl.Rule(self.size['ideal'], self.score['yuksek'] % w_s))
-        rules.append(ctrl.Rule(self.size['kucuk'] | self.size['buyuk'], self.score['dusuk'] % w_s))
+        rules.append(ctrl.Rule(self.size['kucuk'], self.score['dusuk'] % w_s))
 
         # QUALITY & LLM:
         rules.append(ctrl.Rule(self.quality['mukemmel'], self.score['yuksek'] % w_q))
