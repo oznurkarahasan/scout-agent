@@ -22,3 +22,10 @@ size['kucuk'] | size['buyuk'] → score['dusuk']
 quality['mukemmel'] → score['yuksek']
 llm_match['uyumlu'] → score['efsane']
 price['pahali'] & location['yakin'] → önceliğe göre ya score['orta'] ya da score['dusuk']
+
+--- Eklenen Orta Seviye Kurallar (13 kural toplamda) new-rules branchinde eklendi---
+
+price['makul'] → score['orta']       (fiyat makul aralıktaysa orta puan)
+location['orta'] → score['orta']     (konum ne yakın ne uzaksa orta puan)
+quality['iyi'] → score['orta']       (kalite iyi ama mükemmel değilse orta puan)
+llm_match['kismi'] → score['orta']   (oda tipi "Hepsi" seçiliyse kısmi uyum → orta puan)
