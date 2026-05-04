@@ -170,10 +170,8 @@ def get_listings(
             continue
         if "Hepsi" not in target_rooms and ad.get("room_count") not in target_rooms:
             continue
-        if district_filter and district_filter.lower() != _get_district_name(ad.get("district", "")).lower():
-            continue
         price = ad.get("price", 0)
-        if price == 0 or price < min_price or price > max_price:
+        if price == 0 or price < min_price * 0.8 or price > max_price * 1.2:
             continue
         ad_m2 = ad.get("area_m2", 100)
         if ad_m2 < min_m2 or ad_m2 > max_m2:
