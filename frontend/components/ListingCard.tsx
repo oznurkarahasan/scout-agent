@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Listing } from "@/types/listing";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, BedDouble, Calendar, ChevronDown, ChevronUp, ExternalLink, ShieldCheck, Tag, Box, Star, Info } from "lucide-react";
+import { MapPin, BedDouble, Calendar, ChevronDown, ChevronUp, ExternalLink, ShieldCheck, Tag, Box, Info } from "lucide-react";
 
 interface Props {
   listing: Listing;
@@ -48,35 +48,11 @@ export default function ListingCard({
   const label =
     score > 80 ? "TAVSİYE EDİLEN" : isGreen ? "DEĞERLENDİRİLEBİLİR" : "DÜŞÜK UYUM";
 
-  const llmText =
-    typeof listing.llm_score === "number" ? `${listing.llm_score}/10` : "Henüz yok";
-
   const fi = listing.fuzzy_inputs;
 
-  // Suitability ratios (aynı app.py calculate_suitability_ratios mantığı)
-  const pSuit =
-    listing.price >= minPrice && listing.price <= maxPrice
-      ? 100
-      : listing.price < minPrice
-      ? 100
-      : Math.max(0, 100 - ((listing.price - maxPrice) / maxPrice) * 200);
-
-  const lScore =
-    listing.city === targetCity
-      ? targetDistrict &&
-        targetDistrict.toLowerCase() === districtName(listing.district).toLowerCase()
-        ? 10
-        : 7
-      : 2;
-
-  const adM2 = listing.area_m2;
-  const sSuit =
-    adM2 >= minM2 && adM2 <= maxM2
-      ? 100
-      : Math.max(
-          0,
-          100 - (Math.min(Math.abs(adM2 - minM2), Math.abs(adM2 - maxM2)) / Math.max(1, minM2)) * 100
-        );
+  const pSuit = fi.price_suitability;
+  const lScore = fi.location_score;
+  const sSuit = fi.size_suitability;
 
   return (
     <motion.div 
@@ -113,13 +89,10 @@ export default function ListingCard({
               <Tag size={14} className="text-gold" /> Fiyat Uyum: %{pSuit.toFixed(0)}
             </span>
             <span className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-3 py-1.5 rounded-lg shadow-sm">
-              <MapPin size={14} className="text-gold" /> Konum: {lScore}/10
+              <MapPin size={14} className="text-gold" /> Konum: {lScore}/100
             </span>
             <span className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-3 py-1.5 rounded-lg shadow-sm">
               <Box size={14} className="text-gold" /> Boyut: %{sSuit.toFixed(0)}
-            </span>
-            <span className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-3 py-1.5 rounded-lg shadow-sm">
-              <Star size={14} className="text-gold" /> LLM Skoru: {llmText}
             </span>
           </div>
           <p className="text-sm text-gray-600 mt-3 leading-relaxed">
@@ -204,10 +177,10 @@ export default function ListingCard({
                 <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm hover:border-gold/30 transition-colors">
                   <div className="flex justify-between items-center mb-1.5">
                     <span className="text-xs font-bold text-gray-700">Konum Skoru</span>
-                    <span className="text-xs font-extrabold text-navy-deep">{fi.location_score}/10</span>
+                    <span className="text-xs font-extrabold text-navy-deep">{fi.location_score}/100</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2.5">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${fi.location_score * 10}%` }} transition={{ duration: 1, delay: 0.3 }} className="bg-navy-light h-1.5 rounded-full" />
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${fi.location_score}%` }} transition={{ duration: 1, delay: 0.3 }} className="bg-navy-light h-1.5 rounded-full" />
                   </div>
                   <p className="text-[11px] text-gray-500 leading-tight">
                     {listing.city} {targetDistrict && targetDistrict !== "Hepsi" ? ` / ${targetDistrict}` : ''}
@@ -217,10 +190,10 @@ export default function ListingCard({
                 <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm hover:border-gold/30 transition-colors">
                   <div className="flex justify-between items-center mb-1.5">
                     <span className="text-xs font-bold text-gray-700">Kalite & Metin</span>
-                    <span className="text-xs font-extrabold text-navy-deep">{fi.listing_quality}/10 & {fi.llm_alignment}/10</span>
+                    <span className="text-xs font-extrabold text-navy-deep">{fi.listing_quality}/10 & {fi.room_match}/10</span>
                   </div>
                   <p className="text-[11px] text-gray-500 leading-tight mt-2">
-                    Görsel ve açıklama kalitesine ek olarak yapay zeka (LLM) ile metin uygunluğu ölçülmüştür.
+                    Görsel ve açıklama kalitesi ile oda eşleşme skoru birlikte değerlendirilmektedir.
                   </p>
                 </div>
               </div>
