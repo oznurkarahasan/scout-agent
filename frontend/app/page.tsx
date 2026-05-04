@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FilterSidebar from "@/components/FilterSidebar";
 import ListingCard from "@/components/ListingCard";
 import { fetchCities, fetchListings } from "@/lib/api";
@@ -29,9 +29,21 @@ export default function Home() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [count, setCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // İlk açılışta şehirleri çek ve varsayılan şehri ata
+  const search = async (f: FilterState) => {
+    if (!f.city) return;
+    setLoading(true);
+    try {
+      const result = await fetchListings(f);
+      setListings(result.listings);
+      setCount(result.count);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // İlk açılış: şehirleri çek, varsayılanı ata → otomatik arama tetiklenir
   useEffect(() => {
     fetchCities().then((cities) => {
       if (cities.length > 0) {
@@ -40,32 +52,29 @@ export default function Home() {
     });
   }, []);
 
-  const handleSearch = async () => {
+  // Filtreler değişince 600ms debounce ile otomatik ara
+  useEffect(() => {
     if (!filters.city) return;
-    setLoading(true);
-    setSearched(true);
-    try {
-      const result = await fetchListings(filters);
-      setListings(result.listings);
-      setCount(result.count);
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => search(filters), 600);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [filters]);
 
   return (
     <div className="flex gap-6 p-6 max-w-screen-xl mx-auto">
       <FilterSidebar
         filters={filters}
         onChange={setFilters}
-        onSearch={handleSearch}
+        onSearch={() => search(filters)}
         loading={loading}
       />
 
       <main className="flex-1">
         <div className="mb-4">
           <h1 className="text-2xl font-bold text-gray-900">🏹 Scout Agent: Zeki Emlak Bulucu</h1>
-          {searched && count !== null && (
+          {count !== null && (
             <p className="text-gray-600 mt-1">
               <strong>{filters.city}</strong> bölgesinde{" "}
               <strong>{count}</strong> uygun ilan bulundu.
@@ -82,15 +91,9 @@ export default function Home() {
           <div className="text-center py-20 text-gray-400 text-lg">Aranıyor...</div>
         )}
 
-        {!loading && searched && listings.length === 0 && (
+        {!loading && count === 0 && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-yellow-800">
             Aradığınız kriterlerde {filters.city} şehrinde ilan bulunamadı. Filtreleri esnetmeyi deneyin.
-          </div>
-        )}
-
-        {!loading && !searched && (
-          <div className="text-center py-20 text-gray-400">
-            Filtreleri ayarlayıp <strong>Ara</strong> butonuna tıklayın.
           </div>
         )}
 
