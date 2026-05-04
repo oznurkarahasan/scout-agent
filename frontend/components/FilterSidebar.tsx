@@ -60,29 +60,30 @@ export default function FilterSidebar({ filters, onChange, onSearch, loading }: 
       : { min: 2000, max: 20000000, step: 5000 };
 
   return (
-    <aside className="w-72 min-w-[18rem] bg-white shadow-md rounded-xl p-5 flex flex-col gap-4 self-start sticky top-4">
-      <h1 className="text-lg font-bold text-gray-800">🏢 Arama Filtreleri</h1>
-
-      <button
-        onClick={onSearch}
-        disabled={loading}
-        className="w-full py-2 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-700 disabled:opacity-50"
-      >
-        {loading ? "Aranıyor..." : "🔍 Ara"}
-      </button>
+    <aside className="w-72 min-w-[18rem] max-h-[calc(100vh-2rem)] overflow-y-auto bg-white shadow-sm border border-gray-100 rounded-2xl p-6 flex flex-col gap-6 self-start sticky top-4 custom-scrollbar">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Arama Filtreleri</h1>
+        <button
+          onClick={onSearch}
+          disabled={loading}
+          className="w-full py-2.5 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors shadow-sm"
+        >
+          {loading ? "Aranıyor..." : "Aramayı Başlat"}
+        </button>
+      </div>
 
       {/* Listing type */}
       <div>
-        <p className="text-sm font-semibold text-gray-600 mb-1">🏠 İlan Tipi</p>
-        <div className="flex gap-2">
+        <p className="text-sm font-semibold text-gray-700 mb-2">İlan Tipi</p>
+        <div className="flex gap-2 bg-gray-50 p-1 rounded-lg border border-gray-100">
           {(["Hepsi", "Kiralık", "Satılık"] as const).map((t) => (
             <button
               key={t}
               onClick={() => set({ listing_type: t })}
-              className={`px-3 py-1 rounded-full text-sm border ${
+              className={`flex-1 py-1.5 rounded-md text-sm font-medium transition-all ${
                 filters.listing_type === t
-                  ? "bg-gray-900 text-white border-gray-900"
-                  : "border-gray-300 text-gray-700"
+                  ? "bg-white text-slate-900 shadow-sm border border-amber-500"
+                  : "text-gray-500 hover:text-slate-900"
               }`}
             >
               {t}
@@ -91,116 +92,120 @@ export default function FilterSidebar({ filters, onChange, onSearch, loading }: 
         </div>
       </div>
 
-      {/* City */}
-      <div>
-        <p className="text-sm font-semibold text-gray-600 mb-1">📍 Şehir</p>
-        <select
-          value={filters.city}
-          onChange={(e) => set({ city: e.target.value, district: "" })}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-        >
-          {cities.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* City & District */}
+      <div className="flex flex-col gap-3">
+        <div>
+          <p className="text-sm font-semibold text-gray-700 mb-1.5">Şehir</p>
+          <select
+            value={filters.city}
+            onChange={(e) => set({ city: e.target.value, district: "" })}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+          >
+            {cities.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      {/* District */}
-      <div>
-        <p className="text-sm font-semibold text-gray-600 mb-1">🔍 İlçe</p>
-        <select
-          value={filters.district}
-          onChange={(e) => set({ district: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-        >
-          <option value="">Hepsi</option>
-          {districts.map((d) => (
-            <option key={d} value={d}>
-              {d}
-            </option>
-          ))}
-        </select>
+        <div>
+          <p className="text-sm font-semibold text-gray-700 mb-1.5">İlçe</p>
+          <select
+            value={filters.district}
+            onChange={(e) => set({ district: e.target.value })}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+          >
+            <option value="">Tümü</option>
+            {districts.map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Price */}
       <div>
-        <p className="text-sm font-semibold text-gray-600 mb-1">
-          💰 Fiyat Aralığı — {filters.min_price.toLocaleString("tr")} -{" "}
-          {filters.max_price.toLocaleString("tr")} TL
-        </p>
-        <div className="flex gap-2">
-          <input
-            type="range"
-            min={priceRange.min}
-            max={priceRange.max}
-            step={priceRange.step}
-            value={filters.min_price}
-            onChange={(e) => set({ min_price: Number(e.target.value) })}
-            className="w-full"
-          />
-          <input
-            type="range"
-            min={priceRange.min}
-            max={priceRange.max}
-            step={priceRange.step}
-            value={filters.max_price}
-            onChange={(e) => set({ max_price: Number(e.target.value) })}
-            className="w-full"
-          />
+        <p className="text-sm font-semibold text-gray-700 mb-2">Fiyat Aralığı (TL)</p>
+        <div className="flex gap-3 items-center">
+          <div className="flex-1 relative">
+            <span className="absolute left-3 top-2.5 text-gray-400 text-sm">₺</span>
+            <input
+              type="number"
+              min={0}
+              value={filters.min_price || ""}
+              onChange={(e) => set({ min_price: Number(e.target.value) })}
+              placeholder="En Az"
+              className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-2 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all appearance-none"
+            />
+          </div>
+          <span className="text-gray-400">-</span>
+          <div className="flex-1 relative">
+            <span className="absolute left-3 top-2.5 text-gray-400 text-sm">₺</span>
+            <input
+              type="number"
+              min={0}
+              value={filters.max_price || ""}
+              onChange={(e) => set({ max_price: Number(e.target.value) })}
+              placeholder="En Çok"
+              className="w-full border border-gray-200 rounded-lg pl-7 pr-3 py-2 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all appearance-none"
+            />
+          </div>
         </div>
       </div>
 
       {/* m2 */}
       <div>
-        <p className="text-sm font-semibold text-gray-600 mb-1">
-          📐 Büyüklük — {filters.min_m2} - {filters.max_m2} m²
-        </p>
-        <div className="flex gap-2">
-          <input
-            type="range"
-            min={0}
-            max={1000}
-            step={5}
-            value={filters.min_m2}
-            onChange={(e) => set({ min_m2: Number(e.target.value) })}
-            className="w-full"
-          />
-          <input
-            type="range"
-            min={0}
-            max={1000}
-            step={5}
-            value={filters.max_m2}
-            onChange={(e) => set({ max_m2: Number(e.target.value) })}
-            className="w-full"
-          />
+        <p className="text-sm font-semibold text-gray-700 mb-2">Büyüklük (m²)</p>
+        <div className="flex gap-3 items-center">
+          <div className="flex-1">
+            <input
+              type="number"
+              min={0}
+              value={filters.min_m2 || ""}
+              onChange={(e) => set({ min_m2: Number(e.target.value) })}
+              placeholder="Min"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+            />
+          </div>
+          <span className="text-gray-400">-</span>
+          <div className="flex-1">
+            <input
+              type="number"
+              min={0}
+              value={filters.max_m2 || ""}
+              onChange={(e) => set({ max_m2: Number(e.target.value) })}
+              placeholder="Max"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all"
+            />
+          </div>
         </div>
       </div>
 
       {/* Rooms */}
       <div>
-        <p className="text-sm font-semibold text-gray-600 mb-1">🛏️ Oda Sayısı</p>
+        <p className="text-sm font-semibold text-gray-700 mb-2">Oda Sayısı</p>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => set({ rooms: ["Hepsi"] })}
-            className={`px-3 py-1 rounded-full text-sm border ${
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
               filters.rooms.includes("Hepsi")
-                ? "bg-gray-900 text-white border-gray-900"
-                : "border-gray-300 text-gray-700"
+                ? "bg-slate-900 text-amber-500 shadow-sm border border-slate-900"
+                : "bg-gray-50 text-gray-600 hover:text-slate-900 hover:border-amber-500 border border-gray-200"
             }`}
           >
-            Hepsi
+            Tümü
           </button>
           {ROOM_OPTIONS.map((r) => (
             <button
               key={r}
               onClick={() => toggleRoom(r)}
-              className={`px-3 py-1 rounded-full text-sm border ${
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 filters.rooms.includes(r)
-                  ? "bg-gray-900 text-white border-gray-900"
-                  : "border-gray-300 text-gray-700"
+                  ? "bg-slate-900 text-amber-500 shadow-sm border border-slate-900"
+                  : "bg-gray-50 text-gray-600 hover:text-slate-900 hover:border-amber-500 border border-gray-200"
               }`}
             >
               {r}
@@ -209,28 +214,30 @@ export default function FilterSidebar({ filters, onChange, onSearch, loading }: 
         </div>
       </div>
 
-      <hr />
+      <hr className="border-gray-100" />
 
       {/* Priorities */}
       <div>
-        <p className="text-sm font-bold text-gray-700 mb-2">🎯 Önceliklerim</p>
-        {(Object.keys(PRIORITY_LABELS) as (keyof Priorities)[]).map((key) => (
-          <div key={key} className="mb-2">
-            <div className="flex justify-between text-xs text-gray-500 mb-0.5">
-              <span>{PRIORITY_LABELS[key]}</span>
-              <span>{filters.priorities[key].toFixed(1)}</span>
+        <p className="text-sm font-bold text-slate-900 mb-4 tracking-tight">Öncelik Ağırlıkları</p>
+        <div className="flex flex-col gap-4">
+          {(Object.keys(PRIORITY_LABELS) as (keyof Priorities)[]).map((key) => (
+            <div key={key} className="flex flex-col gap-1.5">
+              <div className="flex justify-between text-xs text-gray-600 font-medium">
+                <span>{PRIORITY_LABELS[key]}</span>
+                <span className="text-slate-900 bg-amber-500/10 text-amber-700 px-1.5 py-0.5 rounded font-bold">{filters.priorities[key].toFixed(1)}</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.1}
+                value={filters.priorities[key]}
+                onChange={(e) => setPriority(key, Number(e.target.value))}
+                className="w-full accent-amber-500 cursor-pointer"
+              />
             </div>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.1}
-              value={filters.priorities[key]}
-              onChange={(e) => setPriority(key, Number(e.target.value))}
-              className="w-full"
-            />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </aside>
   );

@@ -73,7 +73,7 @@ export default function Home() {
 
       <main className="flex-1">
         <div className="mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">🏹 Scout Agent: Zeki Emlak Bulucu</h1>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Scout Agent: Zeki Emlak Bulucu</h1>
           {count !== null && (
             <p className="text-gray-600 mt-1">
               <strong>{filters.city}</strong> bölgesinde{" "}

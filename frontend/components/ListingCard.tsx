@@ -84,7 +84,7 @@ export default function ListingCard({
           <span className={`text-xs font-bold uppercase px-2 py-1 rounded ${sourceClass}`}>
             {listing.source}
           </span>
-          <h2 className="text-xl font-bold text-gray-900 mt-2">{listing.title}</h2>
+          <h2 className="text-xl font-bold text-slate-900 mt-2">{listing.title}</h2>
           <p className="text-xl font-semibold text-gray-700 mt-1">
             {listing.price.toLocaleString("tr")} TL
             {listing.listing_type === "Kiralık" && (
@@ -92,15 +92,18 @@ export default function ListingCard({
             )}{" "}
             | {listing.area_m2} m²
           </p>
-          <p className="text-sm text-gray-500 mt-1">
-            📍 {districtName(listing.district)}, {listing.city} | 🛏️{" "}
-            {listing.room_count || "Bilinmiyor"} | 📅 {listing.days_since_posted} gün önce
-          </p>
-          <div className="flex flex-wrap gap-2 mt-3 text-xs">
-            <span className="bg-gray-100 px-2 py-1 rounded-full">💰 Fiyat: %{pSuit.toFixed(0)}</span>
-            <span className="bg-gray-100 px-2 py-1 rounded-full">📍 Konum: {lScore}/10</span>
-            <span className="bg-gray-100 px-2 py-1 rounded-full">📐 Boyut: %{sSuit.toFixed(0)}</span>
-            <span className="bg-gray-100 px-2 py-1 rounded-full">🧠 LLM: {llmText}</span>
+          <div className="flex items-center gap-2.5 text-sm text-gray-500 mt-1.5">
+            <span>{districtName(listing.district)}, {listing.city}</span>
+            <span className="text-gray-300">•</span>
+            <span>{listing.room_count || "Bilinmiyor"} Oda</span>
+            <span className="text-gray-300">•</span>
+            <span>{listing.days_since_posted} gün önce</span>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-4 text-xs font-medium text-slate-900">
+            <span className="bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">Fiyat Uyum: %{pSuit.toFixed(0)}</span>
+            <span className="bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">Konum: {lScore}/10</span>
+            <span className="bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">Boyut: %{sSuit.toFixed(0)}</span>
+            <span className="bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">LLM Skoru: {llmText}</span>
           </div>
           <p className="text-sm text-gray-600 mt-3 leading-relaxed">
             {listing.description.slice(0, 220)}...
@@ -119,7 +122,7 @@ export default function ListingCard({
             href={listing.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 w-full text-center py-2 bg-gray-900 text-white text-sm rounded-lg font-semibold hover:bg-gray-700"
+            className="mt-4 w-full text-center py-2 bg-slate-900 text-white text-sm rounded-lg font-semibold hover:bg-slate-800 transition-colors shadow-sm"
           >
             İlana Git ↗
           </a>
@@ -129,57 +132,79 @@ export default function ListingCard({
       {/* Detay accordion */}
       <button
         onClick={() => setOpen(!open)}
-        className="mt-4 text-xs text-gray-500 underline"
+        className="mt-5 w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-sm font-semibold text-navy-deep border border-gray-200"
       >
-        {open ? "▲ Gizle" : "▼ Scout Mantığı: Bu Puan Nasıl Hesaplandı?"}
+        <span>Scout Mantığı: Puan Hesaplama Özeti</span>
+        <span className="text-gray-400 font-normal text-xs">{open ? "Gizle ▲" : "Göster ▼"}</span>
       </button>
 
       {open && (
-        <div className="mt-4 text-sm text-gray-700 space-y-3 border-t pt-4">
-          <p className="text-xs text-gray-500">
-            Bu skor basit bir ortalama değil; Mamdani bulanık mantık kuralları tüm girdileri birlikte değerlendirir.
+        <div className="mt-3 bg-gray-50 border border-gray-100 rounded-xl p-5 space-y-4 shadow-inner">
+          <p className="text-xs text-gray-500 font-medium text-center mb-2">
+            Mamdani bulanık mantık motoru tüm girdileri birlikte değerlendirir.
           </p>
 
-          <div>
-            <strong>Fiyat yüzdesi: %{fi.price_suitability.toFixed(0)}</strong>
-            <p>İlan fiyatı {listing.price.toLocaleString("tr")} TL. Seçilen aralık {minPrice.toLocaleString("tr")} - {maxPrice.toLocaleString("tr")} TL.</p>
-            {listing.price >= minPrice && listing.price <= maxPrice
-              ? <p>Fiyat aralık içinde — daha ucuz olanlar hafif avantajlı.</p>
-              : listing.price < minPrice
-              ? <p>Alt sınırın altında, uygun kabul edildi (%100).</p>
-              : <p>Üst sınırın üstünde, uzaklaştıkça yüzde düşüyor.</p>}
-          </div>
-
-          <div>
-            <strong>Konum skoru: {fi.location_score}/10</strong>
-            <p>İlanın şehri: {listing.city}. Seçilen şehir: {targetCity}.</p>
-            {targetDistrict && <p>Seçilen ilçe: {targetDistrict}.</p>}
-          </div>
-
-          <div>
-            <strong>Boyut yüzdesi: %{fi.size_suitability.toFixed(0)}</strong>
-            <p>{listing.area_m2} m² — seçilen aralık: {minM2} - {maxM2} m².</p>
-          </div>
-
-          <div>
-            <strong>Kalite: {fi.listing_quality}/10 | Metin: {fi.llm_alignment}/10</strong>
-            {typeof listing.llm_score === "number" && (
-              <p>Gerçek LLM çıktısı: {listing.llm_score}/10.</p>
-            )}
-          </div>
-
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="font-semibold">Nihai Skor</p>
-            <p className="text-xs text-gray-500 mb-2">
-              Mamdani bulanık mantık kuralları tüm girdileri birlikte değerlendirip tek bir son puan üretir.
-            </p>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className={`h-2 rounded-full ${isGreen ? "bg-green-500" : "bg-red-400"}`}
-                style={{ width: `${score}%` }}
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-xs font-bold text-gray-700">Fiyat Uyumu</span>
+                <span className="text-xs font-extrabold text-navy-deep">%{fi.price_suitability.toFixed(0)}</span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2.5">
+                <div className="bg-gold h-1.5 rounded-full" style={{ width: `${fi.price_suitability}%` }} />
+              </div>
+              <p className="text-[11px] text-gray-500 leading-tight">
+                İlan: <strong>{listing.price.toLocaleString("tr")} ₺</strong><br />
+                Hedef: {minPrice.toLocaleString("tr")} - {maxPrice.toLocaleString("tr")} ₺
+              </p>
             </div>
-            <p className="text-right text-xs mt-1 font-bold">%{score.toFixed(1)}</p>
+
+            <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-xs font-bold text-gray-700">Boyut Uyumu</span>
+                <span className="text-xs font-extrabold text-navy-deep">%{fi.size_suitability.toFixed(0)}</span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2.5">
+                <div className="bg-gold h-1.5 rounded-full" style={{ width: `${fi.size_suitability}%` }} />
+              </div>
+              <p className="text-[11px] text-gray-500 leading-tight">
+                İlan: <strong>{listing.area_m2} m²</strong><br />
+                Hedef: {minM2} - {maxM2} m²
+              </p>
+            </div>
+
+            <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-xs font-bold text-gray-700">Konum Skoru</span>
+                <span className="text-xs font-extrabold text-navy-deep">{fi.location_score}/10</span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2.5">
+                <div className="bg-navy-light h-1.5 rounded-full" style={{ width: `${fi.location_score * 10}%` }} />
+              </div>
+              <p className="text-[11px] text-gray-500 leading-tight">
+                {listing.city} {targetDistrict && targetDistrict !== "Hepsi" ? ` / ${targetDistrict}` : ''}
+              </p>
+            </div>
+
+            <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-xs font-bold text-gray-700">Kalite & Metin</span>
+                <span className="text-xs font-extrabold text-navy-deep">{fi.listing_quality}/10 & {fi.llm_alignment}/10</span>
+              </div>
+              <p className="text-[11px] text-gray-500 leading-tight mt-2">
+                Görsel ve açıklama kalitesine ek olarak yapay zeka (LLM) ile metin uygunluğu ölçülmüştür.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-navy-deep rounded-xl p-4 mt-2 text-white shadow-md flex items-center justify-between border border-navy-light">
+            <div>
+              <p className="text-sm font-semibold text-gray-100 tracking-wide">Nihai Scout Skoru</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">Bulanık mantık birleşimi sonucu</p>
+            </div>
+            <div className="text-right">
+              <p className="text-3xl font-black text-gold">%{score.toFixed(1)}</p>
+            </div>
           </div>
         </div>
       )}
