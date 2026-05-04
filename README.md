@@ -14,17 +14,23 @@ Scout Agent is an AI-powered real estate assistant that moves beyond rigid filte
 
 ### Project Structure
 
-```bash
+```
 .
-├── src/
-│   ├── fuzzy/      # Mamdani-type Fuzzy Inference System engine [cite: 45]
-│   ├── llm/        # Groq API client and semantic analysis logic 
-│   ├── data/       # Data loaders and synthetic dataset handlers [cite: 39]
-│   └── utils/      # Notification and helper utilities 
-├── data/           # Local synthetic JSON datasets
-├── app.py          # Streamlit UI Entry Point
-└── main.py         # CLI Entry Point
-
+├── backend/
+│   ├── main.py         # FastAPI entry point
+│   ├── routers/        # API endpoints (/api/listings, /api/cities, /api/districts)
+│   ├── src/
+│   │   ├── fuzzy/      # Mamdani-type Fuzzy Inference System engine
+│   │   ├── llm/        # Groq API client and semantic analysis logic
+│   │   ├── data/       # Data loaders and dataset handlers
+│   │   └── utils/      # Notification and helper utilities
+│   └── scratch/        # One-off data fix scripts
+├── frontend/
+│   ├── app/            # Next.js app router (layout, page)
+│   ├── components/     # FilterSidebar, ListingCard
+│   ├── lib/            # API fetch helpers
+│   └── types/          # TypeScript types
+└── data/               # Local synthetic JSON datasets
 ```
 
 ### Installation
@@ -34,28 +40,37 @@ Scout Agent is an AI-powered real estate assistant that moves beyond rigid filte
 git clone https://github.com/yourusername/scout-agent.git
 cd scout-agent
 ```
-2. Setup env
+
+2. Setup Python env
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-3. Install dependencies
-```bash
-pip install -r requirements.txt
+source venv/bin/activate  # Windows: venv\Scripts\activate
 ```
 
-4. Configure environment variables
-Create a .env file in the root directory:
+3. Configure environment variables
 ```bash
-cp .env.example .env # On Windows copy .env.example .env
-GROQ_API_KEY=your_groq_api_key_here
+cp .env.example .env
+# .env içine GROQ_API_KEY=your_groq_api_key_here ekle
 ```
 
-### Usage
-Run the Streamlit dashboard to interact with the assistant:
+### Running
+
+**Backend** (FastAPI — port 8000)
 ```bash
-streamlit run app.py
+source venv/bin/activate        # Windows: venv\Scripts\activate
+cd backend
+pip install -r requirements.txt   # ilk çalıştırmada
+uvicorn main:app --reload --port 8000
 ```
+
+**Frontend** (Next.js — port 3000)
+```bash
+cd frontend
+npm install   # ilk çalıştırmada
+npm run dev
+```
+
+Tarayıcıda `http://localhost:3000` adresi açıldığında backend'in de ayakta olması gerekir.
 
 ## TODO
 

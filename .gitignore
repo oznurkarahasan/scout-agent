@@ -3,5 +3,13 @@ venv/
 __pycache__/
 *.pyc
 .DS_Store
-.streamlit/secrets.toml
 outputs/
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Backend
+backend/__pycache__/
+backend/src/**/__pycache__/
