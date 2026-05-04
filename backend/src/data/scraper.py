@@ -70,7 +70,8 @@ class EmlakjetScraper:
                                     "posted_date": "2026-04-22",
                                     "source": "Emlakjet",
                                     "publisher_type": "agent",
-                                    "url": ad_url
+                                    "url": ad_url,
+                                    "listing_type": "Satılık"
                                 }
                                 results.append(ad)
                             except Exception:
@@ -106,9 +107,19 @@ class EmlakjetScraper:
 
 async def main():
     scraper = EmlakjetScraper()
-    # Fetch top 2 pages for Istanbul
-    listings = await scraper.fetch_listings(city="istanbul", pages=2)
-    scraper.save_listings(listings)
+    cities = ["istanbul", "ankara", "izmir", "bursa", "antalya"]
+    all_results = []
+    
+    print(f"Starting mass scrape for {len(cities)} cities (10 pages each)...")
+    for city in cities:
+        print(f"Fetching listings for {city}...")
+        # Fetching 10 pages to get "lots of ads"
+        listings = await scraper.fetch_listings(city=city, pages=10)
+        all_results.extend(listings)
+        print(f"Found {len(listings)} ads in {city}")
+    
+    scraper.save_listings(all_results)
+    print("Mass scrape completed successfully!")
 
 if __name__ == "__main__":
     asyncio.run(main())

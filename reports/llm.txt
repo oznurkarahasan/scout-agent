@@ -1,0 +1,2 @@
+test: python -c "from src.llm.groq_client import analyze_listing; print(analyze_listing('Daire çok aydınlık, balkonlu, eşyalı ve yeni bina'))"
+{'balkon': True, 'esyali': True, 'otopark': False, 'asansor': False, 'yeni_bina': True, 'guvenlik': False, 'genel_izlenim': 'pozitif', 'llm_score': 5}
