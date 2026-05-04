@@ -77,11 +77,12 @@ def _calculate_ad_score(
     max_m2: int,
     priorities: dict,
 ) -> tuple[float, dict]:
-    # Price suitability (0-100) — app.py'den aynen alındı
+    # Price suitability (0-100)
     if min_p <= ad["price"] <= max_p:
-        p_suit = 100 - ((ad["price"] - min_p) / (max_p - min_p + 1)) * 30
+        p_suit = 100 - ((ad["price"] - min_p) / (max_p - min_p + 1)) * 20
     elif ad["price"] < min_p:
-        p_suit = 100
+        ratio = (min_p - ad["price"]) / (min_p * 0.2)
+        p_suit = 80 - ratio * 20
     else:
         p_suit = max(0, 70 - ((ad["price"] - max_p) / max_p) * 200)
 
