@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Scout Agent: Zeki Emlak Bulucu",
+  title: "Scout Agent: Gayrimenkul Asistanı",
   description: "Mamdani bulanık mantık ile emlak ilan tarayıcı",
 };
 

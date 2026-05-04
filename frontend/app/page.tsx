@@ -79,7 +79,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-navy-deep to-gold tracking-tight">Scout Agent: Zeki Emlak Bulucu</h1>
+          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-navy-deep to-gold tracking-tight">Scout Agent: Gayrimenkul Asistanı</h1>
           {count !== null && (
             <p className="text-gray-500 mt-2 font-medium bg-white px-4 py-2 rounded-lg border border-gray-100 shadow-sm inline-block">
               <strong className="text-navy-deep">{filters.city}</strong> bölgesinde{" "}
