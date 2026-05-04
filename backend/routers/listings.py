@@ -30,8 +30,45 @@ def _get_district_name(raw_district: str) -> str:
     return district
 
 
+def _get_location_score(city: str, district: str, target_district: str) -> int:
+    district_clean = _get_district_name(district).lower()
+    target_clean = (target_district or "").strip().lower()
+
+    if target_clean and district_clean and target_clean == district_clean:
+        return 100
+
+    city_tiers = {
+        "İstanbul": {
+            "central": {"kadıköy", "beşiktaş", "şişli", "beyoğlu", "üsküdar", "bakırköy", "fatih"},
+            "inner": {"zeytinburnu", "kağıthane", "ataşehir", "bahçelievler", "sarıyer", "maltepe"},
+            "outer": {"başakşehir", "beylikdüzü", "pendik", "kartal", "ümraniye", "sancaktepe", "çekmeköy", "bahçelievler"},
+            "remote": {"esenyurt", "sultanbeyli", "arnavutköy", "silivri", "şile", "tuzla"},
+        },
+        "Ankara": {
+            "central": {"çankaya", "kızılay", "altındağ"},
+            "inner": {"yenimahalle", "mamak", "keçiören"},
+            "outer": {"etimesgut", "sincan", "gölbaşı", "pursaklar"},
+            "remote": {"şereflikoçhisar"},
+        },
+    }
+
+    tiers = city_tiers.get(city, {})
+    if district_clean in tiers.get("central", set()):
+        return 90
+    if district_clean in tiers.get("inner", set()):
+        return 70
+    if district_clean in tiers.get("outer", set()):
+        return 45
+    if district_clean in tiers.get("remote", set()):
+        return 25
+    if city and district_clean:
+        return 55
+    return 15
+
+
 def _calculate_ad_score(
     ad: dict,
+    city: str,
     min_p: int,
     max_p: int,
     target_district: str,
@@ -48,34 +85,30 @@ def _calculate_ad_score(
     else:
         p_suit = max(0, 70 - ((ad["price"] - max_p) / max_p) * 200)
 
-    # Location score (0-10)
-    l_score = 8
-    if target_district and target_district.lower() == _get_district_name(ad.get("district", "")).lower():
-        l_score = 10
+    # Location score (0-100) with clearer central-vs-remote separation.
+    l_score = _get_location_score(city, ad.get("district", ""), target_district)
 
     # Size suitability (0-100)
     ad_m2 = ad.get("area_m2", 100)
-    if min_m2 <= ad_m2 <= max_m2:
-        center = (min_m2 + max_m2) / 2
-        dist_from_center = abs(ad_m2 - center)
-        s_suit = 100 - (dist_from_center / ((max_m2 - min_m2 + 1) / 2)) * 20
-    else:
-        s_suit = 0
+    center = (min_m2 + max_m2) / 2
+    max_dist = max(1, (max_m2 - min_m2 + 1) / 2)
+    dist_from_center = abs(ad_m2 - center)
+    s_suit = max(0, 100 - (dist_from_center / max_dist) * 100)
 
     # Quality score (0-10)
     q_score = min(10, ad["image_count"] * 2 + (1 if len(ad["description"]) > 150 else 0))
 
-    # Room match (0-10)
-    m_score = 5
+    # Room match (0-10) - real room match, not LLM
+    room_match = 5
     if "Hepsi" not in target_rooms:
-        m_score = 10 if ad.get("room_count") in target_rooms else 0
+        room_match = 10 if ad.get("room_count") in target_rooms else 0
 
     inputs = {
         "price_suitability": p_suit,
         "location_score": l_score,
         "listing_quality": q_score,
         "size_suitability": s_suit,
-        "llm_alignment": m_score,
+        "room_match": room_match,
     }
 
     _engine.prepare(priorities)
@@ -147,7 +180,7 @@ def get_listings(
             continue
 
         score, fuzzy_inputs = _calculate_ad_score(
-            ad, min_price, max_price, district_filter,
+            ad, city, min_price, max_price, district_filter,
             target_rooms, min_m2, max_m2, priorities,
         )
 

@@ -32,16 +32,21 @@ export default function Home() {
   const [count, setCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestSeqRef = useRef(0);
 
   const search = async (f: FilterState) => {
     if (!f.city) return;
+    const requestSeq = ++requestSeqRef.current;
     setLoading(true);
     try {
       const result = await fetchListings(f);
+      if (requestSeq !== requestSeqRef.current) return;
       setListings(result.listings);
       setCount(result.count);
     } finally {
-      setLoading(false);
+      if (requestSeq === requestSeqRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -54,11 +59,11 @@ export default function Home() {
     });
   }, []);
 
-  // Filtreler değişince 600ms debounce ile otomatik ara
+  // Filtreler değişince neredeyse anında otomatik ara
   useEffect(() => {
     if (!filters.city) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => search(filters), 600);
+    debounceRef.current = setTimeout(() => search(filters), 80);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };

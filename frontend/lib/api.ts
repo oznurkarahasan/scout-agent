@@ -3,13 +3,13 @@ import { FilterState, Listing } from "@/types/listing";
 const BASE = "/api";
 
 export async function fetchCities(): Promise<string[]> {
-  const res = await fetch(`${BASE}/cities`);
+  const res = await fetch(`${BASE}/cities`, { cache: "no-store" });
   const data = await res.json();
   return data.cities;
 }
 
 export async function fetchDistricts(city: string): Promise<string[]> {
-  const res = await fetch(`${BASE}/districts?city=${encodeURIComponent(city)}`);
+  const res = await fetch(`${BASE}/districts?city=${encodeURIComponent(city)}`, { cache: "no-store" });
   const data = await res.json();
   return data.districts;
 }
@@ -38,6 +38,6 @@ export async function fetchListings(
     priority_llm: String(filters.priorities.llm),
   });
 
-  const res = await fetch(`${BASE}/listings?${params}`);
+  const res = await fetch(`${BASE}/listings?${params}`, { cache: "no-store" });
   return res.json();
 }
