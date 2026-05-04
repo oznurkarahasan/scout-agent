@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Listing } from "@/types/listing";
+import { motion, AnimatePresence } from "framer-motion";
+import { MapPin, BedDouble, Calendar, ChevronDown, ChevronUp, ExternalLink, ShieldCheck, Tag, Box, Star, Info } from "lucide-react";
 
 interface Props {
   listing: Listing;
@@ -77,8 +79,15 @@ export default function ListingCard({
         );
 
   return (
-    <div className={`bg-white rounded-xl shadow p-5 border-l-8 ${borderColor} mb-5`}>
-      <div className="flex gap-4">
+    <motion.div 
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      className={`bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 p-6 border border-gray-100 border-l-[6px] ${borderColor} mb-6 relative overflow-hidden group`}
+    >
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-navy-deep/5 to-transparent rounded-bl-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="flex gap-4 relative z-10">
         {/* Sol taraf: bilgiler */}
         <div className="flex-1">
           <span className={`text-xs font-bold uppercase px-2 py-1 rounded ${sourceClass}`}>
@@ -92,18 +101,26 @@ export default function ListingCard({
             )}{" "}
             | {listing.area_m2} m²
           </p>
-          <div className="flex items-center gap-2.5 text-sm text-gray-500 mt-1.5">
-            <span>{districtName(listing.district)}, {listing.city}</span>
-            <span className="text-gray-300">•</span>
-            <span>{listing.room_count || "Bilinmiyor"} Oda</span>
-            <span className="text-gray-300">•</span>
-            <span>{listing.days_since_posted} gün önce</span>
+          <div className="flex items-center gap-4 text-sm text-gray-500 mt-3 font-medium bg-gray-50/50 p-2 rounded-lg inline-flex">
+            <div className="flex items-center gap-1.5"><MapPin size={16} className="text-gray-400" /> <span>{districtName(listing.district)}, {listing.city}</span></div>
+            <div className="w-1 h-1 bg-gray-300 rounded-full" />
+            <div className="flex items-center gap-1.5"><BedDouble size={16} className="text-gray-400" /> <span>{listing.room_count || "Bilinmiyor"} Oda</span></div>
+            <div className="w-1 h-1 bg-gray-300 rounded-full" />
+            <div className="flex items-center gap-1.5"><Calendar size={16} className="text-gray-400" /> <span>{listing.days_since_posted} gün önce</span></div>
           </div>
-          <div className="flex flex-wrap gap-2 mt-4 text-xs font-medium text-slate-900">
-            <span className="bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">Fiyat Uyum: %{pSuit.toFixed(0)}</span>
-            <span className="bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">Konum: {lScore}/10</span>
-            <span className="bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">Boyut: %{sSuit.toFixed(0)}</span>
-            <span className="bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">LLM Skoru: {llmText}</span>
+          <div className="flex flex-wrap gap-2.5 mt-4 text-xs font-semibold text-navy-deep">
+            <span className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-3 py-1.5 rounded-lg shadow-sm">
+              <Tag size={14} className="text-gold" /> Fiyat Uyum: %{pSuit.toFixed(0)}
+            </span>
+            <span className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-3 py-1.5 rounded-lg shadow-sm">
+              <MapPin size={14} className="text-gold" /> Konum: {lScore}/10
+            </span>
+            <span className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-3 py-1.5 rounded-lg shadow-sm">
+              <Box size={14} className="text-gold" /> Boyut: %{sSuit.toFixed(0)}
+            </span>
+            <span className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-3 py-1.5 rounded-lg shadow-sm">
+              <Star size={14} className="text-gold" /> LLM Skoru: {llmText}
+            </span>
           </div>
           <p className="text-sm text-gray-600 mt-3 leading-relaxed">
             {listing.description.slice(0, 220)}...
@@ -115,16 +132,17 @@ export default function ListingCard({
           <div className={`text-3xl font-extrabold px-4 py-2 rounded-lg border-2 ${badgeBg}`}>
             %{score.toFixed(1)}
           </div>
-          <p className={`mt-2 text-xs font-bold ${isGreen ? "text-green-700" : "text-red-600"}`}>
+          <p className={`mt-2 text-[10px] font-black uppercase tracking-wider text-center flex items-center justify-center gap-1 w-full ${isGreen ? "text-green-600" : "text-red-500"}`}>
+            {isGreen && <ShieldCheck size={14} />}
             {label}
           </p>
           <a
             href={listing.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 w-full text-center py-2 bg-slate-900 text-white text-sm rounded-lg font-semibold hover:bg-slate-800 transition-colors shadow-sm"
+            className="mt-4 w-full flex items-center justify-center gap-2 py-2 bg-slate-900 text-white text-sm rounded-lg font-semibold hover:bg-slate-800 transition-colors shadow-sm"
           >
-            İlana Git ↗
+            İlana Git <ExternalLink size={16} />
           </a>
         </div>
       </div>
@@ -132,82 +150,99 @@ export default function ListingCard({
       {/* Detay accordion */}
       <button
         onClick={() => setOpen(!open)}
-        className="mt-5 w-full flex items-center justify-between px-4 py-2.5 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-sm font-semibold text-navy-deep border border-gray-200"
+        className="mt-5 w-full flex items-center justify-between px-5 py-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors text-sm font-bold text-navy-deep border border-gray-200"
       >
-        <span>Scout Mantığı: Puan Hesaplama Özeti</span>
-        <span className="text-gray-400 font-normal text-xs">{open ? "Gizle ▲" : "Göster ▼"}</span>
+        <span className="flex items-center gap-2"><Info size={16} className="text-gold" /> Scout Mantığı: Puan Hesaplama Özeti</span>
+        <span className="text-gray-400 font-normal text-xs flex items-center gap-1">
+          {open ? <>Gizle <ChevronUp size={14} /></> : <>Göster <ChevronDown size={14} /></>}
+        </span>
       </button>
 
-      {open && (
-        <div className="mt-3 bg-gray-50 border border-gray-100 rounded-xl p-5 space-y-4 shadow-inner">
-          <p className="text-xs text-gray-500 font-medium text-center mb-2">
-            Mamdani bulanık mantık motoru tüm girdileri birlikte değerlendirir.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="text-xs font-bold text-gray-700">Fiyat Uyumu</span>
-                <span className="text-xs font-extrabold text-navy-deep">%{fi.price_suitability.toFixed(0)}</span>
-              </div>
-              <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2.5">
-                <div className="bg-gold h-1.5 rounded-full" style={{ width: `${fi.price_suitability}%` }} />
-              </div>
-              <p className="text-[11px] text-gray-500 leading-tight">
-                İlan: <strong>{listing.price.toLocaleString("tr")} ₺</strong><br />
-                Hedef: {minPrice.toLocaleString("tr")} - {maxPrice.toLocaleString("tr")} ₺
+      <AnimatePresence>
+        {open && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="mt-3 bg-gray-50 border border-gray-100 rounded-xl p-5 space-y-4 shadow-inner">
+              <p className="text-xs text-gray-500 font-medium text-center mb-2">
+                Mamdani bulanık mantık motoru tüm girdileri birlikte değerlendirir.
               </p>
-            </div>
 
-            <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="text-xs font-bold text-gray-700">Boyut Uyumu</span>
-                <span className="text-xs font-extrabold text-navy-deep">%{fi.size_suitability.toFixed(0)}</span>
-              </div>
-              <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2.5">
-                <div className="bg-gold h-1.5 rounded-full" style={{ width: `${fi.size_suitability}%` }} />
-              </div>
-              <p className="text-[11px] text-gray-500 leading-tight">
-                İlan: <strong>{listing.area_m2} m²</strong><br />
-                Hedef: {minM2} - {maxM2} m²
-              </p>
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm hover:border-gold/30 transition-colors">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-xs font-bold text-gray-700">Fiyat Uyumu</span>
+                    <span className="text-xs font-extrabold text-navy-deep">%{fi.price_suitability.toFixed(0)}</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2.5">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${fi.price_suitability}%` }} transition={{ duration: 1, delay: 0.1 }} className="bg-gold h-1.5 rounded-full" />
+                  </div>
+                  <p className="text-[11px] text-gray-500 leading-tight">
+                    İlan: <strong>{listing.price.toLocaleString("tr")} ₺</strong><br />
+                    Hedef: {minPrice.toLocaleString("tr")} - {maxPrice.toLocaleString("tr")} ₺
+                  </p>
+                </div>
 
-            <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="text-xs font-bold text-gray-700">Konum Skoru</span>
-                <span className="text-xs font-extrabold text-navy-deep">{fi.location_score}/10</span>
-              </div>
-              <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2.5">
-                <div className="bg-navy-light h-1.5 rounded-full" style={{ width: `${fi.location_score * 10}%` }} />
-              </div>
-              <p className="text-[11px] text-gray-500 leading-tight">
-                {listing.city} {targetDistrict && targetDistrict !== "Hepsi" ? ` / ${targetDistrict}` : ''}
-              </p>
-            </div>
+                <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm hover:border-gold/30 transition-colors">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-xs font-bold text-gray-700">Boyut Uyumu</span>
+                    <span className="text-xs font-extrabold text-navy-deep">%{fi.size_suitability.toFixed(0)}</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2.5">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${fi.size_suitability}%` }} transition={{ duration: 1, delay: 0.2 }} className="bg-gold h-1.5 rounded-full" />
+                  </div>
+                  <p className="text-[11px] text-gray-500 leading-tight">
+                    İlan: <strong>{listing.area_m2} m²</strong><br />
+                    Hedef: {minM2} - {maxM2} m²
+                  </p>
+                </div>
 
-            <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="text-xs font-bold text-gray-700">Kalite & Metin</span>
-                <span className="text-xs font-extrabold text-navy-deep">{fi.listing_quality}/10 & {fi.llm_alignment}/10</span>
-              </div>
-              <p className="text-[11px] text-gray-500 leading-tight mt-2">
-                Görsel ve açıklama kalitesine ek olarak yapay zeka (LLM) ile metin uygunluğu ölçülmüştür.
-              </p>
-            </div>
-          </div>
+                <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm hover:border-gold/30 transition-colors">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-xs font-bold text-gray-700">Konum Skoru</span>
+                    <span className="text-xs font-extrabold text-navy-deep">{fi.location_score}/10</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2.5">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${fi.location_score * 10}%` }} transition={{ duration: 1, delay: 0.3 }} className="bg-navy-light h-1.5 rounded-full" />
+                  </div>
+                  <p className="text-[11px] text-gray-500 leading-tight">
+                    {listing.city} {targetDistrict && targetDistrict !== "Hepsi" ? ` / ${targetDistrict}` : ''}
+                  </p>
+                </div>
 
-          <div className="bg-navy-deep rounded-xl p-4 mt-2 text-white shadow-md flex items-center justify-between border border-navy-light">
-            <div>
-              <p className="text-sm font-semibold text-gray-100 tracking-wide">Nihai Scout Skoru</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">Bulanık mantık birleşimi sonucu</p>
+                <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm hover:border-gold/30 transition-colors">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-xs font-bold text-gray-700">Kalite & Metin</span>
+                    <span className="text-xs font-extrabold text-navy-deep">{fi.listing_quality}/10 & {fi.llm_alignment}/10</span>
+                  </div>
+                  <p className="text-[11px] text-gray-500 leading-tight mt-2">
+                    Görsel ve açıklama kalitesine ek olarak yapay zeka (LLM) ile metin uygunluğu ölçülmüştür.
+                  </p>
+                </div>
+              </div>
+
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="bg-navy-deep rounded-xl p-4 mt-2 text-white shadow-md flex items-center justify-between border border-navy-light"
+              >
+                <div>
+                  <p className="text-sm font-semibold text-gray-100 tracking-wide">Nihai Scout Skoru</p>
+                  <p className="text-[11px] text-gray-400 mt-0.5">Bulanık mantık birleşimi sonucu</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-black text-gold">%{score.toFixed(1)}</p>
+                </div>
+              </motion.div>
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-black text-gold">%{score.toFixed(1)}</p>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

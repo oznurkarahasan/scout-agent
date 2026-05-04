@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { fetchCities, fetchDistricts } from "@/lib/api";
 import { FilterState, Priorities } from "@/types/listing";
+import { motion } from "framer-motion";
+import { SlidersHorizontal, Search, Map, Banknote, Maximize, DoorOpen, Target } from "lucide-react";
 
 interface Props {
   filters: FilterState;
@@ -60,21 +62,28 @@ export default function FilterSidebar({ filters, onChange, onSearch, loading }: 
       : { min: 2000, max: 20000000, step: 5000 };
 
   return (
-    <aside className="w-72 min-w-[18rem] max-h-[calc(100vh-2rem)] overflow-y-auto bg-white shadow-sm border border-gray-100 rounded-2xl p-6 flex flex-col gap-6 self-start sticky top-4 custom-scrollbar">
+    <motion.aside 
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="w-72 min-w-[18rem] max-h-[calc(100vh-2rem)] overflow-y-auto bg-white/80 backdrop-blur-md shadow-lg border border-gray-100 rounded-2xl p-6 flex flex-col gap-6 self-start sticky top-4 custom-scrollbar"
+    >
       <div className="flex flex-col gap-2">
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Arama Filtreleri</h1>
+        <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <SlidersHorizontal className="text-gold" size={20} /> Arama Filtreleri
+        </h1>
         <button
           onClick={onSearch}
-          disabled={loading}
-          className="w-full py-2.5 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors shadow-sm"
+          className="w-full py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 transition-all shadow-sm flex items-center justify-center gap-2"
         >
+          {loading ? <Search className="animate-spin" size={18} /> : <Search size={18} />}
           {loading ? "Aranıyor..." : "Aramayı Başlat"}
         </button>
       </div>
 
       {/* Listing type */}
       <div>
-        <p className="text-sm font-semibold text-gray-700 mb-2">İlan Tipi</p>
+        <p className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5"><Map size={16} className="text-gray-400" /> İlan Tipi</p>
         <div className="flex gap-2 bg-gray-50 p-1 rounded-lg border border-gray-100">
           {(["Hepsi", "Kiralık", "Satılık"] as const).map((t) => (
             <button
@@ -128,7 +137,7 @@ export default function FilterSidebar({ filters, onChange, onSearch, loading }: 
 
       {/* Price */}
       <div>
-        <p className="text-sm font-semibold text-gray-700 mb-2">Fiyat Aralığı (TL)</p>
+        <p className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5"><Banknote size={16} className="text-gray-400" /> Fiyat Aralığı (TL)</p>
         <div className="flex gap-3 items-center">
           <div className="flex-1 relative">
             <span className="absolute left-3 top-2.5 text-gray-400 text-sm">₺</span>
@@ -158,7 +167,7 @@ export default function FilterSidebar({ filters, onChange, onSearch, loading }: 
 
       {/* m2 */}
       <div>
-        <p className="text-sm font-semibold text-gray-700 mb-2">Büyüklük (m²)</p>
+        <p className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5"><Maximize size={16} className="text-gray-400" /> Büyüklük (m²)</p>
         <div className="flex gap-3 items-center">
           <div className="flex-1">
             <input
@@ -186,7 +195,7 @@ export default function FilterSidebar({ filters, onChange, onSearch, loading }: 
 
       {/* Rooms */}
       <div>
-        <p className="text-sm font-semibold text-gray-700 mb-2">Oda Sayısı</p>
+        <p className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5"><DoorOpen size={16} className="text-gray-400" /> Oda Sayısı</p>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => set({ rooms: ["Hepsi"] })}
@@ -218,7 +227,7 @@ export default function FilterSidebar({ filters, onChange, onSearch, loading }: 
 
       {/* Priorities */}
       <div>
-        <p className="text-sm font-bold text-slate-900 mb-4 tracking-tight">Öncelik Ağırlıkları</p>
+        <p className="text-sm font-bold text-slate-900 mb-4 tracking-tight flex items-center gap-1.5"><Target size={18} className="text-gold" /> Öncelik Ağırlıkları</p>
         <div className="flex flex-col gap-4">
           {(Object.keys(PRIORITY_LABELS) as (keyof Priorities)[]).map((key) => (
             <div key={key} className="flex flex-col gap-1.5">
@@ -233,12 +242,15 @@ export default function FilterSidebar({ filters, onChange, onSearch, loading }: 
                 step={0.1}
                 value={filters.priorities[key]}
                 onChange={(e) => setPriority(key, Number(e.target.value))}
-                className="w-full accent-amber-500 cursor-pointer"
+                className="w-full premium-slider"
+                style={{
+                  background: `linear-gradient(to right, #d97706 ${filters.priorities[key] * 100}%, #e2e8f0 ${filters.priorities[key] * 100}%)`
+                }}
               />
             </div>
           ))}
         </div>
       </div>
-    </aside>
+    </motion.aside>
   );
 }

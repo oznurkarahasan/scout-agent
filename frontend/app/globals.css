@@ -16,4 +16,39 @@
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: #9ca3af;
   }
+
+  .premium-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 9999px;
+    outline: none;
+  }
+  .premium-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #d97706;
+    cursor: pointer;
+    box-shadow: 0 0 0 3px white, 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.15s ease-in-out;
+  }
+  .premium-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+  }
+  .premium-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #d97706;
+    cursor: pointer;
+    box-shadow: 0 0 0 3px white, 0 2px 5px rgba(0,0,0,0.2);
+    border: none;
+    transition: transform 0.15s ease-in-out;
+  }
+  .premium-slider::-moz-range-thumb:hover {
+    transform: scale(1.15);
+  }
 }

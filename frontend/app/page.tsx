@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import FilterSidebar from "@/components/FilterSidebar";
 import ListingCard from "@/components/ListingCard";
 import { fetchCities, fetchListings } from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2 } from "lucide-react";
 import { FilterState, Listing } from "@/types/listing";
 
 const DEFAULT_FILTERS: FilterState = {
@@ -72,33 +74,48 @@ export default function Home() {
       />
 
       <main className="flex-1">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Scout Agent: Zeki Emlak Bulucu</h1>
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6"
+        >
+          <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-navy-deep to-gold tracking-tight">Scout Agent: Zeki Emlak Bulucu</h1>
           {count !== null && (
-            <p className="text-gray-600 mt-1">
-              <strong>{filters.city}</strong> bölgesinde{" "}
-              <strong>{count}</strong> uygun ilan bulundu.
-              <span className="text-sm text-gray-400 ml-2">
+            <p className="text-gray-500 mt-2 font-medium bg-white px-4 py-2 rounded-lg border border-gray-100 shadow-sm inline-block">
+              <strong className="text-navy-deep">{filters.city}</strong> bölgesinde{" "}
+              <strong className="text-navy-deep">{count}</strong> uygun ilan bulundu.
+              <span className="text-sm text-gray-400 ml-3 pl-3 border-l border-gray-200">
                 {filters.listing_type} |{" "}
                 {filters.min_price.toLocaleString("tr")} -{" "}
-                {filters.max_price.toLocaleString("tr")} TL
+                {filters.max_price.toLocaleString("tr")} ₺
               </span>
             </p>
           )}
-        </div>
+        </motion.div>
 
-        {loading && (
-          <div className="text-center py-20 text-gray-400 text-lg">Aranıyor...</div>
-        )}
-
-        {!loading && count === 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-yellow-800">
-            Aradığınız kriterlerde {filters.city} şehrinde ilan bulunamadı. Filtreleri esnetmeyi deneyin.
-          </div>
-        )}
-
-        {!loading &&
-          listings.map((listing) => (
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div 
+              key="loader"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center py-20 text-navy-deep/60"
+            >
+              <Loader2 className="w-10 h-10 animate-spin text-gold mb-4" />
+              <p className="font-semibold text-lg animate-pulse">En iyi ilanlar analiz ediliyor...</p>
+            </motion.div>
+          ) : count === 0 ? (
+            <motion.div 
+              key="empty"
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+              className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-amber-800 shadow-inner flex flex-col items-center text-center"
+            >
+              <span className="text-4xl mb-3">🔍</span>
+              <h3 className="text-xl font-bold mb-2">İlan Bulunamadı</h3>
+              <p className="font-medium">Aradığınız kriterlerde {filters.city} şehrinde ilan bulunamadı.<br/>Filtreleri esnetmeyi deneyin.</p>
+            </motion.div>
+          ) : (
+            <motion.div key="list" className="space-y-6">
+              {listings.map((listing) => (
             <ListingCard
               key={listing.id}
               listing={listing}
@@ -110,6 +127,9 @@ export default function Home() {
               targetDistrict={filters.district}
             />
           ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );
