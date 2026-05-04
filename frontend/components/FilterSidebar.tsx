@@ -20,8 +20,10 @@ const PRIORITY_LABELS: Record<keyof Priorities, string> = {
   location: "Konum Skoru",
   size: "m² Uyumu",
   quality: "İlan Görselleri/Kalite",
-  llm: "Metin Analizi (LLM)",
+  llm: "LLM Skoru",
 };
+
+const VISIBLE_PRIORITY_KEYS: (keyof Priorities)[] = ["price", "location", "size", "quality"];
 
 export default function FilterSidebar({ filters, onChange, onSearch, loading }: Props) {
   const [cities, setCities] = useState<string[]>([]);
@@ -229,7 +231,7 @@ export default function FilterSidebar({ filters, onChange, onSearch, loading }: 
       <div>
         <p className="text-sm font-bold text-slate-900 mb-4 tracking-tight flex items-center gap-1.5"><Target size={18} className="text-gold" /> Öncelik Ağırlıkları</p>
         <div className="flex flex-col gap-4">
-          {(Object.keys(PRIORITY_LABELS) as (keyof Priorities)[]).map((key) => (
+          {VISIBLE_PRIORITY_KEYS.map((key) => (
             <div key={key} className="flex flex-col gap-1.5">
               <div className="flex justify-between text-xs text-gray-600 font-medium">
                 <span>{PRIORITY_LABELS[key]}</span>
