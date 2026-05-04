@@ -29,3 +29,21 @@ price['makul'] → score['orta']       (fiyat makul aralıktaysa orta puan)
 location['orta'] → score['orta']     (konum ne yakın ne uzaksa orta puan)
 quality['iyi'] → score['orta']       (kalite iyi ama mükemmel değilse orta puan)
 llm_match['kismi'] → score['orta']   (oda tipi "Hepsi" seçiliyse kısmi uyum → orta puan)
+
+--- Neden Eklendi? ---
+
+Orijinal 9 kuralda sadece uç durumlar tanımlıydı: ucuz/pahalı, yakın/uzak, mükemmel, uyumlu.
+Fiyat "makul", konum "orta", kalite "iyi", oda "kısmi" durumları için hiç kural yoktu.
+Bu durumlarda o girdi hiç katkı yapmıyordu — sanki o boyut yokmuş gibi davranıyordu.
+
+Eklenmediğinde ne oluyordu:
+  - price_suitability=80 (makul bölgesi) → hiçbir fiyat kuralı ateşlenmiyordu
+  - location_score=60 (orta bölge) → hiçbir konum kuralı ateşlenmiyordu
+  - listing_quality=6 (iyi bölge) → hiçbir kalite kuralı ateşlenmiyordu
+  - room_match=5 (Hepsi seçili, kismi) → hiçbir oda kuralı ateşlenmiyordu
+  Sonuç: bu girdiler skora sıfır katkı yapıyordu, sistem sadece "iyi" uçlardaki girdilerle karar veriyordu.
+
+Eklendikten sonra ne değişti:
+  - Orta seviyedeki her girdi artık score['orta']'ya doğru çekiyor
+  - Tüm üyelik fonksiyonları kural kapsamına girdi, hiçbir bölge boşta kalmadı
+  - Kural sayısı 9'dan 13'e çıktı, sistem daha dengeli ve eksiksiz hale geldi
