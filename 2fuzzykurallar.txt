@@ -1,16 +1,3 @@
-Kurallar şunlar:
-
-Fiyat ucuzsa sonucu efsane yap.
-Fiyat pahalıysa sonucu çöp yap.
-Konum yakınsa sonucu efsane yap.
-Konum uzaksa sonucu düşük yap.
-Boyut ideal ise sonucu yüksek yap.
-Boyut küçük veya büyük ise sonucu düşük yap.
-Kalite mükemmelse sonucu yüksek yap.
-LLM uyumu varsa sonucu efsane yap.
-Fiyat pahalı ve konum yakınsa sonucu düşük yap.
-Konum yakın ve fiyat pahalıysa sonucu orta yap.
-
 Kurallar engine.py içinde şöyle:
 
 price['ucuz'] → score['yuksek']
