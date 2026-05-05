@@ -271,7 +271,6 @@ export default function FuzzyVizPanel({ fuzzyInputs: fi, priorities, actualScore
     const l = fi.location_score;
     const s = fi.size_suitability;
     const q = fi.listing_quality;
-    const m = fi.room_match ?? fi.llm_alignment ?? 5;
 
     const mPahali   = trapmfVal(p, 70, 70, 75, 83);
     const mMakul    = trimfVal(p, 75, 83, 92);
@@ -283,14 +282,11 @@ export default function FuzzyVizPanel({ fuzzyInputs: fi, priorities, actualScore
     const mIdeal    = trapmfVal(s, 40, 70, 100, 100);
     const mIyi      = trimfVal(q, 3, 6, 9);
     const mMukemmel = trapmfVal(q, 8, 9, 10, 10);
-    const mKismi    = trimfVal(m, 4, 6, 8);
-    const mUyumlu   = trapmfVal(m, 7, 9, 10, 10);
 
     const wp = boost(priorities.price);
     const wl = boost(priorities.location);
     const ws = boost(priorities.size);
     const wq = boost(priorities.quality);
-    const wm = boost(priorities.llm);
 
     const acts: RuleActivation[] = [
       { text: "fiyat['ucuz'] → score['yuksek']",     strength: mUcuz   * wp,       output: "yuksek", color: OUTPUT_COLORS.yuksek },
@@ -303,8 +299,6 @@ export default function FuzzyVizPanel({ fuzzyInputs: fi, priorities, actualScore
       { text: "boyut['kucuk'] → score['dusuk']",      strength: mKucuk  * ws,       output: "dusuk",  color: OUTPUT_COLORS.dusuk },
       { text: "kalite['mukemmel'] → score['yuksek']", strength: mMukemmel * wq,     output: "yuksek", color: OUTPUT_COLORS.yuksek },
       { text: "kalite['iyi'] → score['orta']",        strength: mIyi    * wq,       output: "orta",   color: OUTPUT_COLORS.orta },
-      { text: "oda['uyumlu'] → score['efsane']",      strength: mUyumlu * wm,       output: "efsane", color: OUTPUT_COLORS.efsane },
-      { text: "oda['kismi'] → score['orta']",         strength: mKismi  * wm,       output: "orta",   color: OUTPUT_COLORS.orta },
       ...(priorities.location >= priorities.price
         ? [{ text: "pahalı&yakın → score['orta']",  strength: Math.min(mPahali, mYakin) * wl, output: "orta",  color: OUTPUT_COLORS.orta }]
         : [{ text: "pahalı&yakın → score['dusuk']", strength: Math.min(mPahali, mYakin) * wp, output: "dusuk", color: OUTPUT_COLORS.dusuk }]
