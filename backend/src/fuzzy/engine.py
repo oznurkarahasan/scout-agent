@@ -21,9 +21,10 @@ class ScoutFuzzyEngine:
 
     def _setup_mfs(self):
         # inputs membership functions remain consistent
-        self.price['pahali'] = fuzz.trapmf(self.price.universe, [0, 0, 25, 50])
-        self.price['makul'] = fuzz.trimf(self.price.universe, [30, 60, 90])
-        self.price['ucuz'] = fuzz.trapmf(self.price.universe, [70, 85, 100, 100])
+        # p_suit always 70-100 (prices outside range are pre-filtered)
+        self.price['pahali'] = fuzz.trapmf(self.price.universe, [70, 70, 75, 83])
+        self.price['makul'] = fuzz.trimf(self.price.universe, [75, 83, 92])
+        self.price['ucuz'] = fuzz.trapmf(self.price.universe, [87, 93, 100, 100])
 
         self.location['uzak'] = fuzz.trapmf(self.location.universe, [0, 0, 30, 60])
         self.location['orta'] = fuzz.trimf(self.location.universe, [40, 60, 80])
@@ -89,6 +90,12 @@ class ScoutFuzzyEngine:
             rules.append(ctrl.Rule(self.price['pahali'] & self.location['yakin'], self.score['orta'] % w_l))
         else:
             rules.append(ctrl.Rule(self.price['pahali'] & self.location['yakin'], self.score['dusuk'] % w_p))
+
+        # --- Middle-state Rules ---
+        rules.append(ctrl.Rule(self.price['makul'], self.score['orta'] % w_p))
+        rules.append(ctrl.Rule(self.location['orta'], self.score['orta'] % w_l))
+        rules.append(ctrl.Rule(self.quality['iyi'], self.score['orta'] % w_q))
+        rules.append(ctrl.Rule(self.llm_match['kismi'], self.score['orta'] % w_m))
 
         return rules
 
