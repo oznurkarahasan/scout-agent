@@ -4,6 +4,7 @@ export interface FuzzyInputs {
   listing_quality: number;
   size_suitability: number;
   llm_alignment: number;
+  room_match: number;
 }
 
 export interface Listing {

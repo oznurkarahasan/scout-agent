@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Listing } from "@/types/listing";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, BedDouble, Calendar, ChevronDown, ChevronUp, ExternalLink, ShieldCheck, Tag, Box, Info } from "lucide-react";
+import FuzzyVizPanel from "@/components/FuzzyVizPanel";
+import { Priorities } from "@/types/listing";
 
 interface Props {
   listing: Listing;
@@ -13,6 +15,7 @@ interface Props {
   maxM2: number;
   targetCity: string;
   targetDistrict: string;
+  priorities: Priorities;
 }
 
 const SOURCE_COLORS: Record<string, string> = {
@@ -36,6 +39,7 @@ export default function ListingCard({
   maxM2,
   targetCity,
   targetDistrict,
+  priorities,
 }: Props) {
   const [open, setOpen] = useState(false);
   const score = listing.scout_score;
@@ -133,86 +137,14 @@ export default function ListingCard({
 
       <AnimatePresence>
         {open && (
-          <motion.div 
+          <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="mt-3 bg-gray-50 border border-gray-100 rounded-xl p-5 space-y-4 shadow-inner">
-              <p className="text-xs text-gray-500 font-medium text-center mb-2">
-                Mamdani bulanık mantık motoru tüm girdileri birlikte değerlendirir.
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm hover:border-gold/30 transition-colors">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-xs font-bold text-gray-700">Fiyat Uyumu</span>
-                    <span className="text-xs font-extrabold text-navy-deep">%{fi.price_suitability.toFixed(0)}</span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2.5">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${fi.price_suitability}%` }} transition={{ duration: 1, delay: 0.1 }} className="bg-gold h-1.5 rounded-full" />
-                  </div>
-                  <p className="text-[11px] text-gray-500 leading-tight">
-                    İlan: <strong>{listing.price.toLocaleString("tr")} ₺</strong><br />
-                    Hedef: {minPrice.toLocaleString("tr")} - {maxPrice.toLocaleString("tr")} ₺
-                  </p>
-                </div>
-
-                <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm hover:border-gold/30 transition-colors">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-xs font-bold text-gray-700">Boyut Uyumu</span>
-                    <span className="text-xs font-extrabold text-navy-deep">%{fi.size_suitability.toFixed(0)}</span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2.5">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${fi.size_suitability}%` }} transition={{ duration: 1, delay: 0.2 }} className="bg-gold h-1.5 rounded-full" />
-                  </div>
-                  <p className="text-[11px] text-gray-500 leading-tight">
-                    İlan: <strong>{listing.area_m2} m²</strong><br />
-                    Hedef: {minM2} - {maxM2} m²
-                  </p>
-                </div>
-
-                <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm hover:border-gold/30 transition-colors">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-xs font-bold text-gray-700">Konum Skoru</span>
-                    <span className="text-xs font-extrabold text-navy-deep">{fi.location_score}/100</span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2.5">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${fi.location_score}%` }} transition={{ duration: 1, delay: 0.3 }} className="bg-navy-light h-1.5 rounded-full" />
-                  </div>
-                  <p className="text-[11px] text-gray-500 leading-tight">
-                    {listing.city} {targetDistrict && targetDistrict !== "Hepsi" ? ` / ${targetDistrict}` : ''}
-                  </p>
-                </div>
-
-                <div className="bg-white p-3.5 rounded-lg border border-gray-100 shadow-sm hover:border-gold/30 transition-colors">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-xs font-bold text-gray-700">Kalite & Metin</span>
-                    <span className="text-xs font-extrabold text-navy-deep">{fi.listing_quality}/10 & {fi.room_match}/10</span>
-                  </div>
-                  <p className="text-[11px] text-gray-500 leading-tight mt-2">
-                    Görsel ve açıklama kalitesi ile oda eşleşme skoru birlikte değerlendirilmektedir.
-                  </p>
-                </div>
-              </div>
-
-              <motion.div 
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="bg-navy-deep rounded-xl p-4 mt-2 text-white shadow-md flex items-center justify-between border border-navy-light"
-              >
-                <div>
-                  <p className="text-sm font-semibold text-gray-100 tracking-wide">Nihai Scout Skoru</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">Bulanık mantık birleşimi sonucu</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-3xl font-black text-gold">%{score.toFixed(1)}</p>
-                </div>
-              </motion.div>
-            </div>
+            <FuzzyVizPanel fuzzyInputs={fi} priorities={priorities} actualScore={score} />
           </motion.div>
         )}
       </AnimatePresence>
