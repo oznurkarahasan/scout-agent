@@ -130,6 +130,7 @@ export default function Home() {
               maxM2={filters.max_m2}
               targetCity={filters.city}
               targetDistrict={filters.district}
+              priorities={filters.priorities}
             />
           ))}
             </motion.div>
