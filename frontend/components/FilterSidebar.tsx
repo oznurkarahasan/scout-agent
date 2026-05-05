@@ -19,11 +19,10 @@ const PRIORITY_LABELS: Record<keyof Priorities, string> = {
   price: "Fiyat Uyumluluğu",
   location: "Konum Skoru",
   size: "m² Uyumu",
-  quality: "İlan Görselleri/Kalite",
-  llm: "LLM Skoru",
+  rooms: "Oda Sayısı",
 };
 
-const VISIBLE_PRIORITY_KEYS: (keyof Priorities)[] = ["price", "location", "size", "quality"];
+const VISIBLE_PRIORITY_KEYS: (keyof Priorities)[] = ["price", "location", "size", "rooms"];
 
 export default function FilterSidebar({ filters, onChange, onSearch, loading }: Props) {
   const [cities, setCities] = useState<string[]>([]);

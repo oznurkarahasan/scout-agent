@@ -95,10 +95,7 @@ def _calculate_ad_score(
     dist_from_center = abs(ad_m2 - center)
     s_suit = max(0, 100 - (dist_from_center / max_dist) * 100)
 
-    # Quality score (0-10)
-    q_score = min(10, ad["image_count"] * 2 + (1 if len(ad["description"]) > 150 else 0))
-
-    # Room match (0-10) - real room match, not LLM
+    # Room match (0-10)
     room_match = 5
     if "Hepsi" not in target_rooms:
         room_match = 10 if ad.get("room_count") in target_rooms else 0
@@ -106,7 +103,6 @@ def _calculate_ad_score(
     inputs = {
         "price_suitability": p_suit,
         "location_score": l_score,
-        "listing_quality": q_score,
         "size_suitability": s_suit,
         "room_match": room_match,
     }
@@ -147,8 +143,7 @@ def get_listings(
     priority_price: float = Query(default=0.9),
     priority_location: float = Query(default=0.7),
     priority_size: float = Query(default=0.6),
-    priority_quality: float = Query(default=0.5),
-    priority_llm: float = Query(default=0.4),
+    priority_rooms: float = Query(default=0.5),
 ):
     ads = _load_ads()
     target_rooms = rooms.split(",") if rooms != "Hepsi" else ["Hepsi"]
@@ -158,8 +153,7 @@ def get_listings(
         "price": priority_price,
         "location": priority_location,
         "size": priority_size,
-        "quality": priority_quality,
-        "llm": priority_llm,
+        "rooms": priority_rooms,
     }
 
     scored = []

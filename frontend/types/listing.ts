@@ -1,9 +1,7 @@
 export interface FuzzyInputs {
   price_suitability: number;
   location_score: number;
-  listing_quality: number;
   size_suitability: number;
-  llm_alignment: number;
   room_match: number;
 }
 
@@ -31,8 +29,7 @@ export interface Priorities {
   price: number;
   location: number;
   size: number;
-  quality: number;
-  llm: number;
+  rooms: number;
 }
 
 export interface FilterState {
