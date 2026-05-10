@@ -10,27 +10,70 @@ Scout Agent is an AI-powered real estate assistant that moves beyond rigid filte
 
 - Multi-Criteria Scoring: Balances Price, Location, Listing Quality, Semantic Match, and Recency.
 
-- Smart Notifications: Alerts users only when high-compatibility opportunities are found.
-
 ### Project Structure
 
 ```
 .
 ├── backend/
-│   ├── main.py         # FastAPI entry point
-│   ├── routers/        # API endpoints (/api/listings, /api/cities, /api/districts)
-│   ├── src/
-│   │   ├── fuzzy/      # Mamdani-type Fuzzy Inference System engine
-│   │   ├── llm/        # Groq API client and semantic analysis logic
-│   │   ├── data/       # Data loaders and dataset handlers
-│   │   └── utils/      # Notification and helper utilities
-│   └── scratch/        # One-off data fix scripts
+│   ├── main.py               # FastAPI entry point
+│   ├── requirements.txt      # Backend Python dependencies
+│   ├── routers/              # API endpoints (listings, etc.)
+│   │   ├── __init__.py
+│   │   └── listings.py
+│   ├── scratch/              # Data fix/utility scripts
+│   │   ├── check_missing_data.py
+│   │   ├── enrich_dataset.py
+│   │   ├── ensure_district_coverage.py
+│   │   ├── fill_missing_data.py
+│   │   ├── fix_prices.py
+│   │   ├── fix_urls.py
+│   │   └── test_filters.py
+│   ├── services/             # Service layer (empty/init)
+│   │   └── __init__.py
+│   └── src/
+│       ├── __init__.py
+│       ├── data/             # Data loaders and processors
+│       │   ├── __init__.py
+│       │   ├── loader.py
+│       │   ├── processor.py
+│       │   └── scraper.py
+│       ├── fuzzy/            # Fuzzy logic engine
+│       │   ├── __init__.py
+│       │   └── engine.py
+│       ├── llm/              # LLM client and logic
+│       │   ├── __init__.py
+│       │   └── groq_client.py
+│       └── utils/            # Utilities (notifier, etc.)
+│           ├── __init__.py
+│           └── notifier.py
 ├── frontend/
-│   ├── app/            # Next.js app router (layout, page)
-│   ├── components/     # FilterSidebar, ListingCard
-│   ├── lib/            # API fetch helpers
-│   └── types/          # TypeScript types
-└── data/               # Local synthetic JSON datasets
+│   ├── app/                  # Next.js app router (layout, page)
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── components/           # React components
+│   │   ├── FilterSidebar.tsx
+│   │   ├── FuzzyVizPanel.tsx
+│   │   └── ListingCard.tsx
+│   ├── lib/                  # API helpers
+│   │   └── api.ts
+│   ├── types/                # TypeScript types
+│   │   └── listing.ts
+│   ├── public/               # Static assets
+│   ├── package.json
+│   ├── next.config.js
+│   └── ... (config, env, etc.)
+├── data/                     # Local synthetic JSON datasets
+│   ├── ads.json
+│   ├── dataset.json
+│   └── normalized_ads.json
+├── reports/                  # LLM and other reports
+│   └── llm.txt
+├── tests/                    # Python tests
+│   └── __init__.py
+├── requirements.txt          # Top-level requirements (if any)
+├── 2fuzzykurallar.txt        # Fuzzy rules (text)
+└── README.md
 ```
 
 ### Installation
@@ -50,7 +93,7 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 3. Configure environment variables
 ```bash
 cp .env.example .env
-# .env içine GROQ_API_KEY=your_groq_api_key_here ekle
+# .env içine GROQ_API_KEY=your_groq_api_key_here
 ```
 
 ### Running
@@ -59,27 +102,17 @@ cp .env.example .env
 ```bash
 source venv/bin/activate        # Windows: venv\Scripts\activate
 cd backend
-pip install -r requirements.txt   # ilk çalıştırmada
+pip install -r requirements.txt   # first run
 uvicorn main:app --reload --port 8000
 ```
 
 **Frontend** (Next.js — port 3000)
 ```bash
 cd frontend
-npm install   # ilk çalıştırmada
+npm install   # first run
 npm run dev
 ```
 
-Tarayıcıda `http://localhost:3000` adresi açıldığında backend'in de ayakta olması gerekir.
+### Screenshots
 
-## TODO
-
-    [ ] Fuzzy Engine: Complete the Mamdani membership functions for all 5 inputs.
-
-    [ ] Rule Base: Implement the 25-30 core logic rules.
-
-    [ ] LLM Integration: Finalize the structured JSON extraction prompt for Groq.
-
-    [ ] Dashboard: Create interactive sliders for user priority weighting.
-
-    [ ] Notifications: Implement the email/push alert system for scores above a certain threshold.
+![image 1](docs/img1.png)
