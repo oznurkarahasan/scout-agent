@@ -330,11 +330,6 @@ export default function FuzzyVizPanel({ fuzzyInputs: fi, priorities, actualScore
       { text: "makul & orta konum & ideal & kısmi oda → orta",  strength: avg(mMakul,  mOrtaL, mIdeal, mKismi)   * Math.min(wp, wl, ws, wm), output: "orta",   color: OUTPUT_COLORS.orta,   isCombo: true },
       { text: "pahalı & uzak & küçük & uyumsuz → çöp",          strength: avg(mPahali, mUzak,  mKucuk, mUyumsuz) * Math.min(wp, wl, ws, wm), output: "cop",    color: OUTPUT_COLORS.cop,    isCombo: true },
       { text: "pahalı & uzak & küçük & kısmi oda → düşük",      strength: avg(mPahali, mUzak,  mKucuk, mKismi)   * Math.min(wp, wl, ws, wm), output: "dusuk",  color: OUTPUT_COLORS.dusuk,  isCombo: true },
-      // Çelişki çözümü (fiyat vs konum)
-      ...(priorities.location >= priorities.price
-        ? [{ text: "pahalı & yakın → orta",  strength: avg(mPahali, mYakin) * wl, output: "orta",  color: OUTPUT_COLORS.orta,  isCombo: true }]
-        : [{ text: "pahalı & yakın → düşük", strength: avg(mPahali, mYakin) * wp, output: "dusuk", color: OUTPUT_COLORS.dusuk, isCombo: true }]
-      ),
     ];
 
     const centroid = mamdaniCentroid(acts);
