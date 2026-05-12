@@ -21,8 +21,7 @@ const DEFAULT_FILTERS: FilterState = {
     price: 0.9,
     location: 0.7,
     size: 0.6,
-    quality: 0.5,
-    llm: 0.4,
+    rooms: 0.5,
   },
 };
 

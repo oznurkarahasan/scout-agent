@@ -23,6 +23,7 @@ function trimfVal(x: number, a: number, b: number, c: number): number {
 }
 
 function boost(w: number) { return Math.pow(w, 1.5); }
+function avg(...vals: number[]) { return vals.reduce((s, v) => s + v, 0) / vals.length; }
 
 // ── Output MF functions (mirrors engine.py) ───────────────────────────────────
 const OUTPUT_MFS: Record<string, (x: number) => number> = {
@@ -65,6 +66,7 @@ interface RuleActivation {
   strength: number;
   output: string;
   color: string;
+  isCombo?: boolean;
 }
 
 interface MFTerm {
@@ -141,38 +143,56 @@ function MFGraph({ title, value, displayMin, displayMax, terms }: {
 }
 
 // ── Rule Firing Table ─────────────────────────────────────────────────────────
+function RuleRow({ a, strength, maxStr, idx }: { a: RuleActivation; strength: number; maxStr: number; idx: number }) {
+  return (
+    <div className="flex items-center gap-2 rounded-lg px-2 py-1 bg-indigo-50/60 border border-indigo-100">
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] text-gray-600 font-mono truncate">{a.text}</p>
+        <div className="mt-0.5 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${(strength / maxStr) * 100}%` }}
+            transition={{ duration: 0.8, delay: idx * 0.04 }}
+            className="h-full rounded-full"
+            style={{ backgroundColor: a.color }}
+          />
+        </div>
+      </div>
+      <span className="text-[10px] font-bold text-gray-700 w-10 text-right shrink-0">
+        {strength.toFixed(3)}
+      </span>
+      <span className="text-[10px] font-black px-1.5 py-0.5 rounded shrink-0"
+        style={{ color: a.color, backgroundColor: a.color + "20" }}>
+        {OUTPUT_LABELS[a.output]} ({OUTPUT_PEAKS[a.output]})
+      </span>
+    </div>
+  );
+}
+
 function RuleFiringTable({ activations }: { activations: RuleActivation[] }) {
-  const fired = [...activations].filter((a) => a.strength > 0.005).sort((a, b) => b.strength - a.strength);
-  const maxStr = Math.max(...fired.map((a) => a.strength), 0.01);
+  // Combo rules: always show all, sorted by strength
+  const combo = [...activations]
+    .filter((a) => a.isCombo)
+    .sort((a, b) => b.strength - a.strength);
+  const maxStr = Math.max(...combo.map((a) => a.strength), 0.01);
+
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
-      <p className="text-xs font-bold text-gray-700 mb-1">Kural Ateşleme</p>
-      <p className="text-[10px] text-gray-400 mb-3">üyelik derecesi × öncelik ağırlığı = kural aktivasyonu</p>
-      <div className="space-y-2">
-        {fired.map((a, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] text-gray-600 font-mono truncate">{a.text}</p>
-              <div className="mt-0.5 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(a.strength / maxStr) * 100}%` }}
-                  transition={{ duration: 0.8, delay: i * 0.04 }}
-                  className="h-full rounded-full"
-                  style={{ backgroundColor: a.color }}
-                />
-              </div>
-            </div>
-            <span className="text-[10px] font-bold text-gray-700 w-10 text-right shrink-0">
-              {a.strength.toFixed(3)}
-            </span>
-            <span className="text-[10px] font-black px-1.5 py-0.5 rounded shrink-0"
-              style={{ color: a.color, backgroundColor: a.color + "20" }}>
-              {OUTPUT_LABELS[a.output]} ({OUTPUT_PEAKS[a.output]})
-            </span>
-          </div>
-        ))}
+      <div className="flex items-center gap-2 mb-1">
+        <p className="text-xs font-bold text-gray-700">Kural Ateşleme</p>
+        <span className="text-[8px] text-indigo-400 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded font-bold">fiyat & konum & boyut & oda</span>
       </div>
+      <p className="text-[10px] text-gray-400 mb-3">ort(fiyat, konum, boyut, oda üyeliği) × min(ağırlıklar) — her kural her ilanda ateşlenir</p>
+
+      {combo.length > 0 && (
+        <div className="space-y-1.5">
+          {combo.map((a, i) => <RuleRow key={i} a={a} strength={a.strength} maxStr={maxStr} idx={i} />)}
+        </div>
+      )}
+
+      {combo.every((a) => a.strength < 0.005) && (
+        <p className="text-[10px] text-gray-400 italic mt-2">Hiçbir kombinasyon kuralı ateşlenmedi — tüm koşullar aynı anda sağlanmadı.</p>
+      )}
     </div>
   );
 }
@@ -270,45 +290,46 @@ export default function FuzzyVizPanel({ fuzzyInputs: fi, priorities, actualScore
     const p = fi.price_suitability;
     const l = fi.location_score;
     const s = fi.size_suitability;
-    const q = fi.listing_quality;
-    const m = fi.room_match ?? fi.llm_alignment ?? 5;
+    const m = fi.room_match;
 
-    const mPahali   = trapmfVal(p, 70, 70, 75, 83);
-    const mMakul    = trimfVal(p, 75, 83, 92);
-    const mUcuz     = trapmfVal(p, 87, 93, 100, 100);
-    const mUzak     = trapmfVal(l, 0, 0, 30, 60);
-    const mOrta     = trimfVal(l, 40, 60, 80);
-    const mYakin    = trapmfVal(l, 70, 90, 100, 100);
-    const mKucuk    = trapmfVal(s, 0, 0, 25, 50);
-    const mIdeal    = trapmfVal(s, 40, 70, 100, 100);
-    const mIyi      = trimfVal(q, 3, 6, 9);
-    const mMukemmel = trapmfVal(q, 8, 9, 10, 10);
-    const mKismi    = trimfVal(m, 4, 6, 8);
-    const mUyumlu   = trapmfVal(m, 7, 9, 10, 10);
+    const mPahali  = trapmfVal(p, 70, 70, 75, 83);
+    const mMakul   = trimfVal(p, 75, 83, 92);
+    const mUcuz    = trapmfVal(p, 87, 93, 100, 100);
+    const mUzak    = trapmfVal(l, 0, 0, 30, 60);
+    const mOrtaL   = trimfVal(l, 40, 60, 80);
+    const mYakin   = trapmfVal(l, 70, 90, 100, 100);
+    const mKucuk   = trapmfVal(s, 0, 0, 25, 50);
+    const mIdeal   = trapmfVal(s, 40, 70, 100, 100);
+    const mUyumsuz = trapmfVal(m, 0, 0, 2, 5);
+    const mKismi   = trimfVal(m, 4, 6, 8);
+    const mUyumlu  = trapmfVal(m, 7, 9, 10, 10);
 
     const wp = boost(priorities.price);
     const wl = boost(priorities.location);
     const ws = boost(priorities.size);
-    const wq = boost(priorities.quality);
-    const wm = boost(priorities.llm);
+    const wm = boost(priorities.rooms);
 
     const acts: RuleActivation[] = [
-      { text: "fiyat['ucuz'] → score['yuksek']",     strength: mUcuz   * wp,       output: "yuksek", color: OUTPUT_COLORS.yuksek },
-      { text: "fiyat['pahali'] → score['cop']",       strength: mPahali * wp,       output: "cop",    color: OUTPUT_COLORS.cop },
-      { text: "fiyat['makul'] → score['orta']",       strength: mMakul  * wp,       output: "orta",   color: OUTPUT_COLORS.orta },
-      { text: "konum['yakin'] → score['efsane']",     strength: mYakin  * wl * 1.3, output: "efsane", color: OUTPUT_COLORS.efsane },
-      { text: "konum['uzak'] → score['dusuk']",       strength: mUzak   * wl,       output: "dusuk",  color: OUTPUT_COLORS.dusuk },
-      { text: "konum['orta'] → score['orta']",        strength: mOrta   * wl,       output: "orta",   color: OUTPUT_COLORS.orta },
-      { text: "boyut['ideal'] → score['yuksek']",     strength: mIdeal  * ws,       output: "yuksek", color: OUTPUT_COLORS.yuksek },
-      { text: "boyut['kucuk'] → score['dusuk']",      strength: mKucuk  * ws,       output: "dusuk",  color: OUTPUT_COLORS.dusuk },
-      { text: "kalite['mukemmel'] → score['yuksek']", strength: mMukemmel * wq,     output: "yuksek", color: OUTPUT_COLORS.yuksek },
-      { text: "kalite['iyi'] → score['orta']",        strength: mIyi    * wq,       output: "orta",   color: OUTPUT_COLORS.orta },
-      { text: "oda['uyumlu'] → score['efsane']",      strength: mUyumlu * wm,       output: "efsane", color: OUTPUT_COLORS.efsane },
-      { text: "oda['kismi'] → score['orta']",         strength: mKismi  * wm,       output: "orta",   color: OUTPUT_COLORS.orta },
-      ...(priorities.location >= priorities.price
-        ? [{ text: "pahalı&yakın → score['orta']",  strength: Math.min(mPahali, mYakin) * wl, output: "orta",  color: OUTPUT_COLORS.orta }]
-        : [{ text: "pahalı&yakın → score['dusuk']", strength: Math.min(mPahali, mYakin) * wp, output: "dusuk", color: OUTPUT_COLORS.dusuk }]
-      ),
+      // Single-input rules
+      { text: "fiyat['ucuz'] → score['yuksek']",    strength: mUcuz  * wp,        output: "yuksek", color: OUTPUT_COLORS.yuksek },
+      { text: "fiyat['pahali'] → score['cop']",      strength: mPahali * wp,       output: "cop",    color: OUTPUT_COLORS.cop },
+      { text: "fiyat['makul'] → score['orta']",      strength: mMakul  * wp,       output: "orta",   color: OUTPUT_COLORS.orta },
+      { text: "konum['yakin'] → score['efsane']",    strength: mYakin  * wl * 1.3, output: "efsane", color: OUTPUT_COLORS.efsane },
+      { text: "konum['uzak'] → score['dusuk']",      strength: mUzak   * wl,       output: "dusuk",  color: OUTPUT_COLORS.dusuk },
+      { text: "konum['orta'] → score['orta']",       strength: mOrtaL  * wl,       output: "orta",   color: OUTPUT_COLORS.orta },
+      { text: "boyut['ideal'] → score['yuksek']",    strength: mIdeal  * ws,       output: "yuksek", color: OUTPUT_COLORS.yuksek },
+      { text: "boyut['kucuk'] → score['dusuk']",     strength: mKucuk  * ws,       output: "dusuk",  color: OUTPUT_COLORS.dusuk },
+      { text: "oda['uyumlu'] → score['efsane']",     strength: mUyumlu * wm,       output: "efsane", color: OUTPUT_COLORS.efsane },
+      { text: "oda['kismi'] → score['orta']",        strength: mKismi  * wm,       output: "orta",   color: OUTPUT_COLORS.orta },
+      { text: "oda['uyumsuz'] → score['cop']",       strength: mUyumsuz * wm,      output: "cop",    color: OUTPUT_COLORS.cop },
+      // Multi-input combination rules (4 girdi)
+      // Kombinasyon kuralları — strength: 4 üyelik değerinin ortalaması × min(ağırlıklar)
+      { text: "ucuz & yakın & ideal & uyumlu → efsane",         strength: avg(mUcuz,   mYakin, mIdeal, mUyumlu)  * Math.min(wp, wl, ws, wm), output: "efsane", color: OUTPUT_COLORS.efsane, isCombo: true },
+      { text: "makul & yakın & ideal & kısmi oda → yüksek",     strength: avg(mMakul,  mYakin, mIdeal, mKismi)   * Math.min(wp, wl, ws, wm), output: "yuksek", color: OUTPUT_COLORS.yuksek, isCombo: true },
+      { text: "ucuz & orta konum & ideal & kısmi oda → yüksek", strength: avg(mUcuz,   mOrtaL, mIdeal, mKismi)   * Math.min(wp, wl, ws, wm), output: "yuksek", color: OUTPUT_COLORS.yuksek, isCombo: true },
+      { text: "makul & orta konum & ideal & kısmi oda → orta",  strength: avg(mMakul,  mOrtaL, mIdeal, mKismi)   * Math.min(wp, wl, ws, wm), output: "orta",   color: OUTPUT_COLORS.orta,   isCombo: true },
+      { text: "pahalı & uzak & küçük & uyumsuz → çöp",          strength: avg(mPahali, mUzak,  mKucuk, mUyumsuz) * Math.min(wp, wl, ws, wm), output: "cop",    color: OUTPUT_COLORS.cop,    isCombo: true },
+      { text: "pahalı & uzak & küçük & kısmi oda → düşük",      strength: avg(mPahali, mUzak,  mKucuk, mKismi)   * Math.min(wp, wl, ws, wm), output: "dusuk",  color: OUTPUT_COLORS.dusuk,  isCombo: true },
     ];
 
     const centroid = mamdaniCentroid(acts);
@@ -322,7 +343,7 @@ export default function FuzzyVizPanel({ fuzzyInputs: fi, priorities, actualScore
       </p>
 
       {/* MF Grafikleri */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <MFGraph title="Fiyat Uyumu" value={fi.price_suitability} displayMin={65} displayMax={100}
           terms={[
             { label: "pahalı", color: "#ef4444", compute: (x) => trapmfVal(x, 70, 70, 75, 83) },
@@ -339,6 +360,12 @@ export default function FuzzyVizPanel({ fuzzyInputs: fi, priorities, actualScore
           terms={[
             { label: "küçük", color: "#ef4444", compute: (x) => trapmfVal(x, 0, 0, 25, 50) },
             { label: "ideal", color: "#22c55e", compute: (x) => trapmfVal(x, 40, 70, 100, 100) },
+          ]} />
+        <MFGraph title="Oda Uyumu" value={fi.room_match} displayMin={0} displayMax={10}
+          terms={[
+            { label: "uyumsuz", color: "#ef4444", compute: (x) => trapmfVal(x, 0, 0, 2, 5) },
+            { label: "kısmi",   color: "#f97316", compute: (x) => trimfVal(x, 4, 6, 8) },
+            { label: "uyumlu",  color: "#22c55e", compute: (x) => trapmfVal(x, 7, 9, 10, 10) },
           ]} />
       </div>
 

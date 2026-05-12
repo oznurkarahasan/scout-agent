@@ -34,8 +34,7 @@ export async function fetchListings(
     priority_price: String(filters.priorities.price),
     priority_location: String(filters.priorities.location),
     priority_size: String(filters.priorities.size),
-    priority_quality: String(filters.priorities.quality),
-    priority_llm: String(filters.priorities.llm),
+    priority_rooms: String(filters.priorities.rooms),
   });
 
   const res = await fetch(`${BASE}/listings?${params}`, { cache: "no-store" });
