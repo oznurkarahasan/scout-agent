@@ -1,36 +1,108 @@
-Kurallar engine.py içinde şöyle:
+--- Son Revizyon: 4 Girdi, 18 Kural (quality çıkarıldı, room_match eklendi) ---
 
-price['ucuz'] → score['yuksek']
-price['pahali'] → score['cop']
-location['yakin'] → score['efsane']
-location['uzak'] → score['dusuk']
-size['ideal'] → score['yuksek']
-size['kucuk'] | size['buyuk'] → score['dusuk']
-quality['mukemmel'] → score['yuksek']
-llm_match['uyumlu'] → score['efsane']
-price['pahali'] & location['yakin'] → önceliğe göre ya score['orta'] ya da score['dusuk']
+Eski sistemde 5 girdi vardı: price_suitability, location_score, size_suitability, listing_quality, llm_match
+Yeni sistemde quality girdi kaldırıldı, llm_match → room_match olarak yeniden adlandırıldı.
+Artık 4 girdi var: price_suitability, location_score, size_suitability, room_match
 
---- Eklenen Orta Seviye Kurallar (13 kural toplamda) new-rules branchinde eklendi---
+== GİRDİLER (Antecedents) ==
 
-price['makul'] → score['orta']       (fiyat makul aralıktaysa orta puan)
-location['orta'] → score['orta']     (konum ne yakın ne uzaksa orta puan)
-quality['iyi'] → score['orta']       (kalite iyi ama mükemmel değilse orta puan)
-llm_match['kismi'] → score['orta']   (oda tipi "Hepsi" seçiliyse kısmi uyum → orta puan)
+1. price_suitability  [0–100]
+   - pahali : trapmf [70, 70, 75, 83]   → fiyat bütçenin üst sınırına yakın
+   - makul  : trimf  [75, 83, 92]        → fiyat bütçe ortasında
+   - ucuz   : trapmf [87, 93, 100, 100]  → fiyat bütçenin çok altında
 
---- Neden Eklendi? ---
+2. location_score  [0–100]
+   - uzak  : trapmf [0, 0, 30, 60]       → hedef ilçeye/merkeze uzak
+   - orta  : trimf  [40, 60, 80]         → orta mesafe
+   - yakin : trapmf [70, 90, 100, 100]   → hedef ilçeye çok yakın
 
-Orijinal 9 kuralda sadece uç durumlar tanımlıydı: ucuz/pahalı, yakın/uzak, mükemmel, uyumlu.
-Fiyat "makul", konum "orta", kalite "iyi", oda "kısmi" durumları için hiç kural yoktu.
-Bu durumlarda o girdi hiç katkı yapmıyordu — sanki o boyut yokmuş gibi davranıyordu.
+3. size_suitability  [0–100]
+   - kucuk : trapmf [0, 0, 25, 50]       → m² kullanıcının aralığı dışında/kenarında
+   - ideal : trapmf [40, 70, 100, 100]   → m² kullanıcının aralığı ortasına yakın
 
-Eklenmediğinde ne oluyordu:
-  - price_suitability=80 (makul bölgesi) → hiçbir fiyat kuralı ateşlenmiyordu
-  - location_score=60 (orta bölge) → hiçbir konum kuralı ateşlenmiyordu
-  - listing_quality=6 (iyi bölge) → hiçbir kalite kuralı ateşlenmiyordu
-  - room_match=5 (Hepsi seçili, kismi) → hiçbir oda kuralı ateşlenmiyordu
-  Sonuç: bu girdiler skora sıfır katkı yapıyordu, sistem sadece "iyi" uçlardaki girdilerle karar veriyordu.
+4. room_match  [0–10]
+   - uyumsuz : trapmf [0, 0, 2, 5]       → oda tipi eşleşmiyor (değer=0)
+   - kismi   : trimf  [4, 6, 8]          → "Hepsi" seçili, nötr (değer=5)
+   - uyumlu  : trapmf [7, 9, 10, 10]     → oda tipi tam eşleşiyor (değer=10)
 
-Eklendikten sonra ne değişti:
-  - Orta seviyedeki her girdi artık score['orta']'ya doğru çekiyor
-  - Tüm üyelik fonksiyonları kural kapsamına girdi, hiçbir bölge boşta kalmadı
-  - Kural sayısı 9'dan 13'e çıktı, sistem daha dengeli ve eksiksiz hale geldi
+== ÇIKTI (Consequent) ==
+
+suitability_score  [0–100]
+   - cop    : trimf [0, 0, 25]
+   - dusuk  : trimf [15, 35, 55]
+   - orta   : trimf [45, 60, 75]
+   - yuksek : trimf [65, 80, 90]
+   - efsane : trimf [85, 100, 100]
+
+== KURALLAR (18 adet) ==
+
+-- 4 Girdili Kombinasyon Kuralları (17 adet) --
+
+R1: price['ucuz']   & location['yakin'] & size['ideal'] & room_match['uyumlu']  → score['efsane']  (en iyi senaryo)
+R2: price['makul']  & location['yakin'] & size['ideal'] & room_match['kismi']   → score['yuksek']  (iyi senaryo)
+R3: price['makul']  & location['orta']  & size['ideal'] & room_match['kismi']   → score['orta']    (ortalama senaryo)
+R4: price['ucuz']   & location['orta']  & size['ideal'] & room_match['kismi']   → score['yuksek']  (ucuz + orta konum)
+R5: price['pahali'] & location['uzak']  & size['kucuk'] & room_match['uyumsuz'] → score['cop']     (en kötü senaryo)
+R6:  price['pahali'] & location['uzak']  & size['kucuk'] & room_match['kismi']   → score['dusuk']   (kötü ama nötr oda)
+
+R7:  price['ucuz']   & location['uzak']  & size['ideal'] & room_match['kismi']   → score['orta']    (fiyat çok uygun ama uzak; m² ve oda nötr)
+R8:  price['ucuz']   & location['yakin'] & size['kucuk'] & room_match['uyumsuz'] → score['orta']    (ucuz + yakın ama m² küçük ve oda uyumsuz)
+R9:  price['makul']  & location['uzak']  & size['ideal'] & room_match['uyumlu']  → score['orta']    (makul fiyat, uzak ama m² ve oda uyumlu)
+R10: price['pahali'] & location['yakin'] & size['ideal'] & room_match['uyumlu']  → score['orta']    (pahalı ama yakın + ideal m² + uyumlu oda)
+R11: price['ucuz']   & location['yakin'] & size['ideal'] & room_match['uyumsuz'] → score['yuksek']  (ucuz + yakın + ideal m², oda uyumsuz ama diğerleri mükemmel)
+R12: price['makul']  & location['orta']  & size['kucuk'] & room_match['uyumlu']  → score['orta']    (makul + orta konum, m² küçük ama oda uyumlu)
+R13: price['makul']  & location['uzak']  & size['kucuk'] & room_match['uyumsuz'] → score['cop']     (makul fiyat ama uzak + küçük + yanlış oda)
+R14: price['pahali'] & location['orta']  & size['ideal'] & room_match['uyumlu']  → score['dusuk']   (pahalı + orta konum, iyi m² + uyumlu oda — fiyat cezalandırılır)
+R15: price['pahali'] & location['orta']  & size['kucuk'] & room_match['kismi']   → score['cop']     (pahalı + orta konum + küçük + nötr oda)
+R16: price['ucuz']   & location['uzak']  & size['kucuk'] & room_match['uyumlu']  → score['dusuk']   (ucuz ama uzak + küçük; oda uyumlu ama yeterli değil)
+R17: price['makul']  & location['yakin'] & size['kucuk'] & room_match['uyumsuz'] → score['dusuk']   (makul + yakın ama m² küçük ve oda yanlış)
+
+== AĞIRLIK MEKANİZMASI ==
+
+Her öncelik değeri [0.0–1.0] aralığında girilir.
+boost(w) = w^1.5 ile farklar büyütülür.
+Kombinasyon kurallarında min(w_p, w_l, w_s, w_m) kullanılır — AND operatörü en zayıf bağı alır.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Çelişki Çözüm Kuralı (1 adet) --
+
+R18: price['pahali'] & location['yakin'] →
+       eğer w_location >= w_price: score['orta']   (konum daha önemliyse yakınlık kazanır)
+       eğer w_location <  w_price: score['dusuk']  (fiyat daha önemliyse pahalılık cezalandırılır)
