@@ -1,6 +1,9 @@
+import logging
 import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
+
+logger = logging.getLogger(__name__)
 
 class ScoutFuzzyEngine:
     def __init__(self):
@@ -50,12 +53,17 @@ class ScoutFuzzyEngine:
         Output label for each combination is computed dynamically from the
         priority-weighted quality score, so priorities genuinely shift outcomes.
         """
-        def boost(w): return w ** 1.5
+        def boost(w):
+            return w ** 1.5
 
         w_p = boost(priorities.get('price', 0.5))
         w_l = boost(priorities.get('location', 0.5))
         w_s = boost(priorities.get('size', 0.5))
         w_m = boost(priorities.get('rooms', 0.5))
+        total_w = w_p + w_l + w_s + w_m
+        if total_w == 0:
+            w_p = w_l = w_s = w_m = 1.0
+            total_w = 4.0
 
         # Feature quality on a 0-2 scale (bad=0, neutral=1, good=2)
         P_SCORE = {'pahali': 0, 'makul': 1, 'ucuz': 2}
@@ -65,7 +73,6 @@ class ScoutFuzzyEngine:
 
         def output_label(p, l, s, r):
             """Priority-weighted quality score (0-2) → output label."""
-            total_w = w_p + w_l + w_s + w_m
             score = (P_SCORE[p]*w_p + L_SCORE[l]*w_l + S_SCORE[s]*w_s + R_SCORE[r]*w_m) / total_w
             if score < 0.125:  return 'cop'
             if score < 0.875:  return 'dusuk'
@@ -74,7 +81,7 @@ class ScoutFuzzyEngine:
             return 'efsane'
 
         rules = []
-        w = min(w_p, w_l, w_s, w_m)
+        w = min(w_p, w_l, w_s, w_m) or 1.0
 
         for p in ['pahali', 'makul', 'ucuz']:
             for l in ['uzak', 'orta', 'yakin']:
@@ -106,5 +113,6 @@ class ScoutFuzzyEngine:
         try:
             self.scout_sim.compute()
             return self.scout_sim.output['suitability_score'], self.scout_sim
-        except:
+        except Exception as e:
+            logger.error("FuzzyEngine.compute() failed: %s | inputs=%s", e, inputs)
             return 0, None
