@@ -150,10 +150,10 @@ def get_listings(
     district_filter = district.strip() if district else ""
 
     priorities = {
-        "price": priority_price,
-        "location": priority_location,
-        "size": priority_size,
-        "rooms": priority_rooms,
+        "price":    max(0.0, min(1.0, priority_price)),
+        "location": max(0.0, min(1.0, priority_location)),
+        "size":     max(0.0, min(1.0, priority_size)),
+        "rooms":    max(0.0, min(1.0, priority_rooms)),
     }
 
     scored = []
