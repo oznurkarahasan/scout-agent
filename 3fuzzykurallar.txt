@@ -1,0 +1,79 @@
+--- Revizyon 3: 4 Girdi, 54 Kural — Dinamik Öncelik Ağırlıklı Çıktılar ---
+
+Tüm kurallar 4 girdi → 1 çıktı.
+Çıktı etiketi (cop/dusuk/orta/yuksek/efsane) her kural için sabit değil;
+kullanıcının öncelik vektörüne göre dinamik hesaplanır.
+
+== GİRDİLER (Antecedents) ==
+
+1. price_suitability  [0–100]
+   - pahali : trapmf [70, 70, 75, 83]
+   - makul  : trimf  [75, 83, 92]
+   - ucuz   : trapmf [87, 93, 100, 100]
+
+2. location_score  [0–100]
+   - uzak  : trapmf [0, 0, 30, 60]
+   - orta  : trimf  [40, 60, 80]
+   - yakin : trapmf [70, 90, 100, 100]
+
+3. size_suitability  [0–100]
+   - kucuk : trapmf [0, 0, 25, 50]
+   - ideal : trapmf [40, 70, 100, 100]
+
+4. room_match  [0–10]
+   - uyumsuz : trapmf [0, 0, 2, 5]
+   - kismi   : trimf  [4, 6, 8]
+   - uyumlu  : trapmf [7, 9, 10, 10]
+
+== ÇIKTI (Consequent) ==
+
+suitability_score  [0–100]
+   - cop    : trimf [0, 0, 25]
+   - dusuk  : trimf [15, 35, 55]
+   - orta   : trimf [45, 60, 75]
+   - yuksek : trimf [65, 80, 90]
+   - efsane : trimf [85, 100, 100]
+
+== DİNAMİK ÇIKTI FORMÜLÜ ==
+
+Her kombinasyon (p, l, s, r) için:
+
+  Özellik kalite skorları (0-2 ölçeği):
+    price   : pahali=0, makul=1, ucuz=2
+    location: uzak=0,   orta=1,  yakin=2
+    size    : kucuk=0,  ideal=2
+    room    : uyumsuz=0, kismi=1, uyumlu=2
+
+  Boost: w_x = priority_x ^ 1.5  (farkları büyütür)
+
+  Öncelik-ağırlıklı kalite skoru (0-2 aralığında):
+    score = (q_price * w_p + q_loc * w_l + q_size * w_s + q_room * w_m)
+            / (w_p + w_l + w_s + w_m)
+
+  Skor → çıktı etiketi:
+    score <  0.125  → cop
+    score <  0.875  → dusuk
+    score <  1.375  → orta
+    score <  1.875  → yuksek
+    score >= 1.875  → efsane
+
+  Kural aktivasyon ağırlığı: w = min(w_p, w_l, w_s, w_m)
+
+== ÖRNEK ÇIKTILAR (aynı ilan, farklı öncelik) ==
+
+İlan: pahali + yakin + kucuk + uyumsuz
+  Konum odaklı  (l=1.0, p=0.2, s=0.4, r=0.4): orta   (~60)
+  Dengeli        (all=0.5)                    : dusuk  (~35)
+  Fiyat odaklı  (p=1.0, l=0.2, s=0.4, r=0.4): cop    (~12)
+  Oda odaklı    (r=1.0, diger=0.2)           : dusuk  (~35)
+
+İlan: ucuz + uzak + ideal + uyumlu
+  Konum odaklı  (l=1.0, p=0.2, s=0.4, r=0.4): dusuk  (~35)
+  Dengeli        (all=0.5)                    : yuksek (~78)
+  Fiyat odaklı  (p=1.0, l=0.2, s=0.4, r=0.4): efsane (~93)
+  Oda odaklı    (r=1.0, diger=0.2)           : yuksek (~78)
+
+== SABİT UC DURUMLAR ==
+
+  En iyi  (ucuz+yakin+ideal+uyumlu) : score = 2.0 → efsane  (~94) — her oncelikte
+  En kotu (pahali+uzak+kucuk+uyumsuz): score = 0.0 → cop     (~10) — her oncelikte
