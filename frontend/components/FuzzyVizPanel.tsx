@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { FuzzyInputs, Priorities } from "@/types/listing";
 
@@ -169,10 +169,15 @@ function RuleRow({ a, strength, maxStr, idx }: { a: RuleActivation; strength: nu
 }
 
 function RuleFiringTable({ activations }: { activations: RuleActivation[] }) {
+  const [showAll, setShowAll] = useState(false);
+  const [onlyFired, setOnlyFired] = useState(true);
+  const fireThreshold = 0.01;
   // Combo rules: always show all, sorted by strength
   const combo = [...activations]
     .filter((a) => a.isCombo)
     .sort((a, b) => b.strength - a.strength);
+  const filtered = onlyFired ? combo.filter((a) => a.strength > fireThreshold) : combo;
+  const visible = showAll ? filtered : filtered.slice(0, 6);
   const maxStr = Math.max(...combo.map((a) => a.strength), 0.01);
 
   return (
@@ -183,13 +188,33 @@ function RuleFiringTable({ activations }: { activations: RuleActivation[] }) {
       </div>
       <p className="text-[10px] text-gray-400 mb-3">min(fiyat, konum, boyut, oda üyeliği) × min(ağırlıklar) — her kural her ilanda ateşlenir</p>
 
-      {combo.length > 0 && (
+      <div className="flex items-center gap-2 mb-2">
+        <button
+          type="button"
+          onClick={() => setOnlyFired((v) => !v)}
+          className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 underline"
+        >
+          {onlyFired ? "Tüm kuralları göster" : "Sadece ateşlenenleri göster"}
+        </button>
+      </div>
+
+      {filtered.length > 0 && (
         <div className="space-y-1.5">
-          {combo.map((a, i) => <RuleRow key={i} a={a} strength={a.strength} maxStr={maxStr} idx={i} />)}
+          {visible.map((a, i) => <RuleRow key={i} a={a} strength={a.strength} maxStr={maxStr} idx={i} />)}
         </div>
       )}
 
-      {combo.every((a) => a.strength < 0.005) && (
+      {filtered.length > 6 && (
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          className="mt-2 text-[10px] font-bold text-indigo-600 hover:text-indigo-700 underline"
+        >
+          {showAll ? "Daha az goster" : "Daha fazla goster"}
+        </button>
+      )}
+
+      {filtered.length === 0 && (
         <p className="text-[10px] text-gray-400 italic mt-2">Hiçbir kombinasyon kuralı ateşlenmedi — tüm koşullar aynı anda sağlanmadı.</p>
       )}
     </div>
@@ -317,7 +342,7 @@ export default function FuzzyVizPanel({ fuzzyInputs: fi, priorities, actualScore
       return s < 0.125 ? 'cop' : s < 0.875 ? 'dusuk' : s < 1.375 ? 'orta' : s < 1.875 ? 'yuksek' : 'efsane';
     };
 
-    // full 54-rule backend (3×3×2×3) — compute all, show top 6 by strength
+    // full 54-rule backend (3×3×2×3) — compute all, list top 6 by strength
     const pKeys  = ['pahali', 'makul', 'ucuz']            as const;
     const lKeys  = ['uzak',   'orta',  'yakin']           as const;
     const sKeys  = ['kucuk',  'ideal']                    as const;
@@ -351,10 +376,9 @@ export default function FuzzyVizPanel({ fuzzyInputs: fi, priorities, actualScore
       }
     }
     allRules.sort((a, b) => b.strength - a.strength);
-    const acts = allRules.slice(0, 6);
 
-    const centroid = mamdaniCentroid(acts);
-    return { activations: acts, centroid };
+    const centroid = mamdaniCentroid(allRules);
+    return { activations: allRules, centroid };
   }, [fi, priorities]);
 
   return (
