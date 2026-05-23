@@ -33,7 +33,7 @@ class ScoutFuzzyEngine:
         self.location['yakin'] = fuzz.trapmf(self.location.universe, [70, 90, 100, 100])
 
         # size_suitability: 100 = range merkezi, 0 = range kenarı
-        self.size['kucuk'] = fuzz.trapmf(self.size.universe, [0, 0, 25, 50])
+        self.size['uyumsuz'] = fuzz.trapmf(self.size.universe, [0, 0, 25, 50])
         self.size['ideal'] = fuzz.trapmf(self.size.universe, [40, 70, 100, 100])
 
         self.room_match['uyumsuz'] = fuzz.trapmf(self.room_match.universe, [0, 0, 2, 5])
@@ -68,7 +68,7 @@ class ScoutFuzzyEngine:
         # Feature quality on a 0-2 scale (bad=0, neutral=1, good=2)
         P_SCORE = {'pahali': 0, 'makul': 1, 'ucuz': 2}
         L_SCORE = {'uzak': 0, 'orta': 1, 'yakin': 2}
-        S_SCORE = {'kucuk': 0, 'ideal': 2}
+        S_SCORE = {'uyumsuz': 0, 'ideal': 2}
         R_SCORE = {'uyumsuz': 0, 'kismi': 1, 'uyumlu': 2}
 
         def output_label(p, l, s, r):
@@ -85,7 +85,7 @@ class ScoutFuzzyEngine:
 
         for p in ['pahali', 'makul', 'ucuz']:
             for l in ['uzak', 'orta', 'yakin']:
-                for s in ['kucuk', 'ideal']:
+                for s in ['uyumsuz', 'ideal']:
                     for r in ['uyumsuz', 'kismi', 'uyumlu']:
                         rules.append(ctrl.Rule(
                             self.price[p] & self.location[l] & self.size[s] & self.room_match[r],

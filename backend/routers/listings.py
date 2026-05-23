@@ -41,7 +41,7 @@ def _get_location_score(city: str, district: str, target_district: str) -> int:
         "İstanbul": {
             "central": {"kadıköy", "beşiktaş", "şişli", "beyoğlu", "üsküdar", "bakırköy", "fatih"},
             "inner": {"zeytinburnu", "kağıthane", "ataşehir", "bahçelievler", "sarıyer", "maltepe"},
-            "outer": {"başakşehir", "beylikdüzü", "pendik", "kartal", "ümraniye", "sancaktepe", "çekmeköy", "bahçelievler"},
+            "outer": {"başakşehir", "beylikdüzü", "pendik", "kartal", "ümraniye", "sancaktepe", "çekmeköy"},
             "remote": {"esenyurt", "sultanbeyli", "arnavutköy", "silivri", "şile", "tuzla"},
         },
         "Ankara": {
