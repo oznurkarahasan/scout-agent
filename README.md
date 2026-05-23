@@ -1,14 +1,21 @@
 ## Scout Agent: Intelligent Real Estate Assistant
 
-Scout Agent is an AI-powered real estate assistant that moves beyond rigid filtering systems. By combining Fuzzy Logic and Large Language Models (LLMs), it evaluates property listings with human-like reasoning to provide a personalized "Compatibility Score".
+Scout Agent is an AI-powered real estate assistant that moves beyond rigid filtering systems. By combining fuzzy logic with an optional LLM scoring step, it evaluates property listings and returns a personalized "Suitability Score".
 
 ### Features
 
 - Fuzzy Evaluation: Handles flexible criteria (e.g., "slightly expensive but great location") instead of strict binary filters.
 
-- LLM-Powered Analysis: Uses Groq (Llama 3) to extract semantic meaning from property descriptions (e.g., balcony status, furniture quality).
+- Multi-Criteria Scoring: Balances price suitability, location score, size suitability, and room match.
 
-- Multi-Criteria Scoring: Balances Price, Location, Listing Quality, Semantic Match, and Recency.
+- Optional LLM Scoring: Uses Groq (Llama 3) to enrich listings with a cached `llm_score` during dataset normalization.
+
+### Fuzzy Inputs
+
+- price_suitability (0-100): Higher is cheaper relative to the selected price range.
+- location_score (0-100): Higher is closer to the target district or central areas.
+- size_suitability (0-100): Higher is closer to the selected m2 range center.
+- room_match (0-10): 10 for exact match when rooms are filtered, 0 otherwise.
 
 ### Project Structure
 
@@ -72,7 +79,7 @@ Scout Agent is an AI-powered real estate assistant that moves beyond rigid filte
 ├── tests/                    # Python tests
 │   └── __init__.py
 ├── requirements.txt          # Top-level requirements (if any)
-├── 2fuzzykurallar.txt        # Fuzzy rules (text)
+├── 3fuzzykurallar.txt        # Fuzzy rules (text)
 └── README.md
 ```
 
@@ -90,7 +97,7 @@ python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 ```
 
-3. Configure environment variables
+3. Configure environment variables (optional)
 ```bash
 cp .env.example .env
 # .env içine GROQ_API_KEY=your_groq_api_key_here

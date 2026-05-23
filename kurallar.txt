@@ -1,4 +1,4 @@
---- Revizyon 3: 4 Girdi, 54 Kural — Dinamik Öncelik Ağırlıklı Çıktılar ---
+--- 4 Girdi, 54 Kural — Dinamik Öncelik Ağırlıklı Çıktılar ---
 
 Tüm kurallar 4 girdi → 1 çıktı.
 Çıktı etiketi (cop/dusuk/orta/yuksek/efsane) her kural için sabit değil;
