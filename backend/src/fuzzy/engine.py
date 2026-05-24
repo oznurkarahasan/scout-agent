@@ -19,8 +19,7 @@ class ScoutFuzzyEngine:
         self.scout_sim = None
 
     def _setup_mfs(self):
-        # inputs membership functions remain consistent
-        # p_suit always 70-100 (prices outside range are pre-filtered)
+        # Membership functions follow the latest rule sheet.
         self.price['pahali'] = fuzz.trapmf(self.price.universe, [70, 70, 75, 83])
         self.price['makul'] = fuzz.trimf(self.price.universe, [75, 83, 92])
         self.price['ucuz'] = fuzz.trapmf(self.price.universe, [87, 93, 100, 100])
@@ -45,69 +44,38 @@ class ScoutFuzzyEngine:
         self.score['efsane'] = fuzz.trimf(self.score.universe, [85, 100, 100])
 
     def get_weighted_rules(self, priorities):
-        """
-        priorities values: 0.0 to 1.0
-        Using power of priority to make it more dominant.
-        """
-        def boost(w): return w ** 1.5 # Boost the importance differences
+        """Build the 18-rule fuzzy system from the latest rule sheet."""
+
+        def boost(w: float) -> float:
+            return w ** 1.5
 
         w_p = boost(priorities.get('price', 0.5))
         w_l = boost(priorities.get('location', 0.5))
         w_s = boost(priorities.get('size', 0.5))
         w_m = boost(priorities.get('rooms', 0.5))
+        combo_weight = min(w_p, w_l, w_s, w_m)
 
-        rules = []
+        rules = [
+            ctrl.Rule(self.price['ucuz'] & self.location['yakin'] & self.size['ideal'] & self.room_match['uyumlu'], self.score['efsane'] % combo_weight),
+            ctrl.Rule(self.price['makul'] & self.location['yakin'] & self.size['ideal'] & self.room_match['kismi'], self.score['yuksek'] % combo_weight),
+            ctrl.Rule(self.price['makul'] & self.location['orta'] & self.size['ideal'] & self.room_match['kismi'], self.score['orta'] % combo_weight),
+            ctrl.Rule(self.price['ucuz'] & self.location['orta'] & self.size['ideal'] & self.room_match['kismi'], self.score['yuksek'] % combo_weight),
+            ctrl.Rule(self.price['pahali'] & self.location['uzak'] & self.size['kucuk'] & self.room_match['uyumsuz'], self.score['cop'] % combo_weight),
+            ctrl.Rule(self.price['pahali'] & self.location['uzak'] & self.size['kucuk'] & self.room_match['kismi'], self.score['dusuk'] % combo_weight),
+            ctrl.Rule(self.price['ucuz'] & self.location['uzak'] & self.size['ideal'] & self.room_match['kismi'], self.score['orta'] % combo_weight),
+            ctrl.Rule(self.price['ucuz'] & self.location['yakin'] & self.size['kucuk'] & self.room_match['uyumsuz'], self.score['orta'] % combo_weight),
+            ctrl.Rule(self.price['makul'] & self.location['uzak'] & self.size['ideal'] & self.room_match['uyumlu'], self.score['orta'] % combo_weight),
+            ctrl.Rule(self.price['pahali'] & self.location['yakin'] & self.size['ideal'] & self.room_match['uyumlu'], self.score['orta'] % combo_weight),
+            ctrl.Rule(self.price['ucuz'] & self.location['yakin'] & self.size['ideal'] & self.room_match['uyumsuz'], self.score['yuksek'] % combo_weight),
+            ctrl.Rule(self.price['makul'] & self.location['orta'] & self.size['kucuk'] & self.room_match['uyumlu'], self.score['orta'] % combo_weight),
+            ctrl.Rule(self.price['makul'] & self.location['uzak'] & self.size['kucuk'] & self.room_match['uyumsuz'], self.score['cop'] % combo_weight),
+            ctrl.Rule(self.price['pahali'] & self.location['orta'] & self.size['ideal'] & self.room_match['uyumlu'], self.score['dusuk'] % combo_weight),
+            ctrl.Rule(self.price['pahali'] & self.location['orta'] & self.size['kucuk'] & self.room_match['kismi'], self.score['cop'] % combo_weight),
+            ctrl.Rule(self.price['ucuz'] & self.location['uzak'] & self.size['kucuk'] & self.room_match['uyumlu'], self.score['dusuk'] % combo_weight),
+            ctrl.Rule(self.price['makul'] & self.location['yakin'] & self.size['kucuk'] & self.room_match['uyumsuz'], self.score['dusuk'] % combo_weight),
+        ]
 
-        # --- Single-input rules ---
-        rules.append(ctrl.Rule(self.price['ucuz'], self.score['yuksek'] % w_p))
-        rules.append(ctrl.Rule(self.price['pahali'], self.score['cop'] % w_p))
-        rules.append(ctrl.Rule(self.price['makul'], self.score['orta'] % w_p))
-
-        rules.append(ctrl.Rule(self.location['yakin'], self.score['efsane'] % (w_l * 1.3)))
-        rules.append(ctrl.Rule(self.location['uzak'], self.score['dusuk'] % w_l))
-        rules.append(ctrl.Rule(self.location['orta'], self.score['orta'] % w_l))
-
-        rules.append(ctrl.Rule(self.size['ideal'], self.score['yuksek'] % w_s))
-        rules.append(ctrl.Rule(self.size['kucuk'], self.score['dusuk'] % w_s))
-
-        rules.append(ctrl.Rule(self.room_match['uyumlu'], self.score['efsane'] % w_m))
-        rules.append(ctrl.Rule(self.room_match['kismi'], self.score['orta'] % w_m))
-        rules.append(ctrl.Rule(self.room_match['uyumsuz'], self.score['cop'] % w_m))
-
-        # --- Multi-input combination rules (4 girdi) ---
-        # En iyi senaryo: ucuz + yakın + ideal boyut + tam oda eşleşmesi
-        rules.append(ctrl.Rule(
-            self.price['ucuz'] & self.location['yakin'] & self.size['ideal'] & self.room_match['uyumlu'],
-            self.score['efsane'] % min(w_p, w_l, w_s, w_m)
-        ))
-        # İyi senaryo: makul fiyat + yakın + ideal + kısmi oda
-        rules.append(ctrl.Rule(
-            self.price['makul'] & self.location['yakin'] & self.size['ideal'] & self.room_match['kismi'],
-            self.score['yuksek'] % min(w_p, w_l, w_s, w_m)
-        ))
-        # Ortalama senaryo (en yaygın): makul + orta konum + ideal + kısmi oda
-        rules.append(ctrl.Rule(
-            self.price['makul'] & self.location['orta'] & self.size['ideal'] & self.room_match['kismi'],
-            self.score['orta'] % min(w_p, w_l, w_s, w_m)
-        ))
-        # Ucuz + orta konum + ideal + kısmi oda
-        rules.append(ctrl.Rule(
-            self.price['ucuz'] & self.location['orta'] & self.size['ideal'] & self.room_match['kismi'],
-            self.score['yuksek'] % min(w_p, w_l, w_s, w_m)
-        ))
-        # Kötü senaryo: pahalı + uzak + küçük + uyumsuz oda
-        rules.append(ctrl.Rule(
-            self.price['pahali'] & self.location['uzak'] & self.size['kucuk'] & self.room_match['uyumsuz'],
-            self.score['cop'] % min(w_p, w_l, w_s, w_m)
-        ))
-        # Kötü ama nötr oda: pahalı + uzak + küçük + kısmi
-        rules.append(ctrl.Rule(
-            self.price['pahali'] & self.location['uzak'] & self.size['kucuk'] & self.room_match['kismi'],
-            self.score['dusuk'] % min(w_p, w_l, w_s, w_m)
-        ))
-
-        # --- Conflict resolution: expensive+near uses priority comparison ---
-        if priorities.get('location', 0.5) >= priorities.get('price', 0.5):
+        if w_l >= w_p:
             rules.append(ctrl.Rule(self.price['pahali'] & self.location['yakin'], self.score['orta'] % w_l))
         else:
             rules.append(ctrl.Rule(self.price['pahali'] & self.location['yakin'], self.score['dusuk'] % w_p))

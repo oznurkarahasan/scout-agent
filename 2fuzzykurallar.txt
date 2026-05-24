@@ -1,9 +1,3 @@
---- Son Revizyon: 4 Girdi, 18 Kural (quality çıkarıldı, room_match eklendi) ---
-
-Eski sistemde 5 girdi vardı: price_suitability, location_score, size_suitability, listing_quality, llm_match
-Yeni sistemde quality girdi kaldırıldı, llm_match → room_match olarak yeniden adlandırıldı.
-Artık 4 girdi var: price_suitability, location_score, size_suitability, room_match
-
 == GİRDİLER (Antecedents) ==
 
 1. price_suitability  [0–100]
@@ -63,46 +57,31 @@ Her öncelik değeri [0.0–1.0] aralığında girilir.
 boost(w) = w^1.5 ile farklar büyütülür.
 Kombinasyon kurallarında min(w_p, w_l, w_s, w_m) kullanılır — AND operatörü en zayıf bağı alır.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 -- Çelişki Çözüm Kuralı (1 adet) --
 
 R18: price['pahali'] & location['yakin'] →
        eğer w_location >= w_price: score['orta']   (konum daha önemliyse yakınlık kazanır)
        eğer w_location <  w_price: score['dusuk']  (fiyat daha önemliyse pahalılık cezalandırılır)
+
+== KURAL TABLOSU ==
+
+| Kural | Girdi Sayısı | Koşul | Çıktı |
+|---|---:|---|---|
+| R1 | 4 | price['ucuz'] + location['yakin'] + size['ideal'] + room_match['uyumlu'] | score['efsane'] |
+| R2 | 4 | price['makul'] + location['yakin'] + size['ideal'] + room_match['kismi'] | score['yuksek'] |
+| R3 | 4 | price['makul'] + location['orta'] + size['ideal'] + room_match['kismi'] | score['orta'] |
+| R4 | 4 | price['ucuz'] + location['orta'] + size['ideal'] + room_match['kismi'] | score['yuksek'] |
+| R5 | 4 | price['pahali'] + location['uzak'] + size['kucuk'] + room_match['uyumsuz'] | score['cop'] |
+| R6 | 4 | price['pahali'] + location['uzak'] + size['kucuk'] + room_match['kismi'] | score['dusuk'] |
+| R7 | 4 | price['ucuz'] + location['uzak'] + size['ideal'] + room_match['kismi'] | score['orta'] |
+| R8 | 4 | price['ucuz'] + location['yakin'] + size['kucuk'] + room_match['uyumsuz'] | score['orta'] |
+| R9 | 4 | price['makul'] + location['uzak'] + size['ideal'] + room_match['uyumlu'] | score['orta'] |
+| R10 | 4 | price['pahali'] + location['yakin'] + size['ideal'] + room_match['uyumlu'] | score['orta'] |
+| R11 | 4 | price['ucuz'] + location['yakin'] + size['ideal'] + room_match['uyumsuz'] | score['yuksek'] |
+| R12 | 4 | price['makul'] + location['orta'] + size['kucuk'] + room_match['uyumlu'] | score['orta'] |
+| R13 | 4 | price['makul'] + location['uzak'] + size['kucuk'] + room_match['uyumsuz'] | score['cop'] |
+| R14 | 4 | price['pahali'] + location['orta'] + size['ideal'] + room_match['uyumlu'] | score['dusuk'] |
+| R15 | 4 | price['pahali'] + location['orta'] + size['kucuk'] + room_match['kismi'] | score['cop'] |
+| R16 | 4 | price['ucuz'] + location['uzak'] + size['kucuk'] + room_match['uyumlu'] | score['dusuk'] |
+| R17 | 4 | price['makul'] + location['yakin'] + size['kucuk'] + room_match['uyumsuz'] | score['dusuk'] |
+| R18 | 2 | price['pahali'] + location['yakin'] | score['orta'] veya score['dusuk'] |

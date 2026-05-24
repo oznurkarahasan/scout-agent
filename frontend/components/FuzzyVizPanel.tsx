@@ -23,7 +23,7 @@ function trimfVal(x: number, a: number, b: number, c: number): number {
 }
 
 function boost(w: number) { return Math.pow(w, 1.5); }
-function avg(...vals: number[]) { return vals.reduce((s, v) => s + v, 0) / vals.length; }
+function andMin(...vals: number[]) { return Math.min(...vals); }
 
 // ── Output MF functions (mirrors engine.py) ───────────────────────────────────
 const OUTPUT_MFS: Record<string, (x: number) => number> = {
@@ -308,28 +308,28 @@ export default function FuzzyVizPanel({ fuzzyInputs: fi, priorities, actualScore
     const wl = boost(priorities.location);
     const ws = boost(priorities.size);
     const wm = boost(priorities.rooms);
+    const comboWeight = Math.min(wp, wl, ws, wm);
+    const conflictWeight = wl >= wp ? wl : wp;
 
     const acts: RuleActivation[] = [
-      // Single-input rules
-      { text: "fiyat['ucuz'] → score['yuksek']",    strength: mUcuz  * wp,        output: "yuksek", color: OUTPUT_COLORS.yuksek },
-      { text: "fiyat['pahali'] → score['cop']",      strength: mPahali * wp,       output: "cop",    color: OUTPUT_COLORS.cop },
-      { text: "fiyat['makul'] → score['orta']",      strength: mMakul  * wp,       output: "orta",   color: OUTPUT_COLORS.orta },
-      { text: "konum['yakin'] → score['efsane']",    strength: mYakin  * wl * 1.3, output: "efsane", color: OUTPUT_COLORS.efsane },
-      { text: "konum['uzak'] → score['dusuk']",      strength: mUzak   * wl,       output: "dusuk",  color: OUTPUT_COLORS.dusuk },
-      { text: "konum['orta'] → score['orta']",       strength: mOrtaL  * wl,       output: "orta",   color: OUTPUT_COLORS.orta },
-      { text: "boyut['ideal'] → score['yuksek']",    strength: mIdeal  * ws,       output: "yuksek", color: OUTPUT_COLORS.yuksek },
-      { text: "boyut['kucuk'] → score['dusuk']",     strength: mKucuk  * ws,       output: "dusuk",  color: OUTPUT_COLORS.dusuk },
-      { text: "oda['uyumlu'] → score['efsane']",     strength: mUyumlu * wm,       output: "efsane", color: OUTPUT_COLORS.efsane },
-      { text: "oda['kismi'] → score['orta']",        strength: mKismi  * wm,       output: "orta",   color: OUTPUT_COLORS.orta },
-      { text: "oda['uyumsuz'] → score['cop']",       strength: mUyumsuz * wm,      output: "cop",    color: OUTPUT_COLORS.cop },
-      // Multi-input combination rules (4 girdi)
-      // Kombinasyon kuralları — strength: 4 üyelik değerinin ortalaması × min(ağırlıklar)
-      { text: "ucuz & yakın & ideal & uyumlu → efsane",         strength: avg(mUcuz,   mYakin, mIdeal, mUyumlu)  * Math.min(wp, wl, ws, wm), output: "efsane", color: OUTPUT_COLORS.efsane, isCombo: true },
-      { text: "makul & yakın & ideal & kısmi oda → yüksek",     strength: avg(mMakul,  mYakin, mIdeal, mKismi)   * Math.min(wp, wl, ws, wm), output: "yuksek", color: OUTPUT_COLORS.yuksek, isCombo: true },
-      { text: "ucuz & orta konum & ideal & kısmi oda → yüksek", strength: avg(mUcuz,   mOrtaL, mIdeal, mKismi)   * Math.min(wp, wl, ws, wm), output: "yuksek", color: OUTPUT_COLORS.yuksek, isCombo: true },
-      { text: "makul & orta konum & ideal & kısmi oda → orta",  strength: avg(mMakul,  mOrtaL, mIdeal, mKismi)   * Math.min(wp, wl, ws, wm), output: "orta",   color: OUTPUT_COLORS.orta,   isCombo: true },
-      { text: "pahalı & uzak & küçük & uyumsuz → çöp",          strength: avg(mPahali, mUzak,  mKucuk, mUyumsuz) * Math.min(wp, wl, ws, wm), output: "cop",    color: OUTPUT_COLORS.cop,    isCombo: true },
-      { text: "pahalı & uzak & küçük & kısmi oda → düşük",      strength: avg(mPahali, mUzak,  mKucuk, mKismi)   * Math.min(wp, wl, ws, wm), output: "dusuk",  color: OUTPUT_COLORS.dusuk,  isCombo: true },
+      { text: "ucuz & yakın & ideal & uyumlu → efsane",         strength: andMin(mUcuz,   mYakin, mIdeal, mUyumlu)  * comboWeight, output: "efsane", color: OUTPUT_COLORS.efsane, isCombo: true },
+      { text: "makul & yakın & ideal & kısmi → yüksek",         strength: andMin(mMakul,  mYakin, mIdeal, mKismi)   * comboWeight, output: "yuksek", color: OUTPUT_COLORS.yuksek, isCombo: true },
+      { text: "makul & orta & ideal & kısmi → orta",            strength: andMin(mMakul,  mOrtaL, mIdeal, mKismi)   * comboWeight, output: "orta",   color: OUTPUT_COLORS.orta,   isCombo: true },
+      { text: "ucuz & orta & ideal & kısmi → yüksek",           strength: andMin(mUcuz,   mOrtaL, mIdeal, mKismi)   * comboWeight, output: "yuksek", color: OUTPUT_COLORS.yuksek, isCombo: true },
+      { text: "pahalı & uzak & küçük & uyumsuz → çöp",          strength: andMin(mPahali, mUzak,  mKucuk, mUyumsuz) * comboWeight, output: "cop",    color: OUTPUT_COLORS.cop,    isCombo: true },
+      { text: "pahalı & uzak & küçük & kısmi → düşük",          strength: andMin(mPahali, mUzak,  mKucuk, mKismi)   * comboWeight, output: "dusuk",  color: OUTPUT_COLORS.dusuk,  isCombo: true },
+      { text: "ucuz & uzak & ideal & kısmi → orta",             strength: andMin(mUcuz,   mUzak,  mIdeal, mKismi)   * comboWeight, output: "orta",   color: OUTPUT_COLORS.orta,   isCombo: true },
+      { text: "ucuz & yakın & küçük & uyumsuz → orta",          strength: andMin(mUcuz,   mYakin, mKucuk, mUyumsuz) * comboWeight, output: "orta",   color: OUTPUT_COLORS.orta,   isCombo: true },
+      { text: "makul & uzak & ideal & uyumlu → orta",           strength: andMin(mMakul,  mUzak,  mIdeal, mUyumlu)  * comboWeight, output: "orta",   color: OUTPUT_COLORS.orta,   isCombo: true },
+      { text: "pahalı & yakın & ideal & uyumlu → orta",         strength: andMin(mPahali, mYakin, mIdeal, mUyumlu)  * comboWeight, output: "orta",   color: OUTPUT_COLORS.orta,   isCombo: true },
+      { text: "ucuz & yakın & ideal & uyumsuz → yüksek",        strength: andMin(mUcuz,   mYakin, mIdeal, mUyumsuz) * comboWeight, output: "yuksek", color: OUTPUT_COLORS.yuksek, isCombo: true },
+      { text: "makul & orta & küçük & uyumlu → orta",           strength: andMin(mMakul,  mOrtaL, mKucuk, mUyumlu)  * comboWeight, output: "orta",   color: OUTPUT_COLORS.orta,   isCombo: true },
+      { text: "makul & uzak & küçük & uyumsuz → çöp",           strength: andMin(mMakul,  mUzak,  mKucuk, mUyumsuz) * comboWeight, output: "cop",    color: OUTPUT_COLORS.cop,    isCombo: true },
+      { text: "pahalı & orta & ideal & uyumlu → düşük",         strength: andMin(mPahali, mOrtaL, mIdeal, mUyumlu)  * comboWeight, output: "dusuk",  color: OUTPUT_COLORS.dusuk,  isCombo: true },
+      { text: "pahalı & orta & küçük & kısmi → çöp",            strength: andMin(mPahali, mOrtaL, mKucuk, mKismi)   * comboWeight, output: "cop",    color: OUTPUT_COLORS.cop,    isCombo: true },
+      { text: "ucuz & uzak & küçük & uyumlu → düşük",           strength: andMin(mUcuz,   mUzak,  mKucuk, mUyumlu)  * comboWeight, output: "dusuk",  color: OUTPUT_COLORS.dusuk,  isCombo: true },
+      { text: "makul & yakın & küçük & uyumsuz → düşük",        strength: andMin(mMakul,  mYakin, mKucuk, mUyumsuz) * comboWeight, output: "dusuk",  color: OUTPUT_COLORS.dusuk,  isCombo: true },
+      { text: "pahalı & yakın → orta/düşük",                    strength: mPahali * mYakin * conflictWeight, output: wl >= wp ? "orta" : "dusuk", color: wl >= wp ? OUTPUT_COLORS.orta : OUTPUT_COLORS.dusuk, isCombo: true },
     ];
 
     const centroid = mamdaniCentroid(acts);
