@@ -41,7 +41,7 @@ def _get_location_score(city: str, district: str, target_district: str) -> int:
         "İstanbul": {
             "central": {"kadıköy", "beşiktaş", "şişli", "beyoğlu", "üsküdar", "bakırköy", "fatih"},
             "inner": {"zeytinburnu", "kağıthane", "ataşehir", "bahçelievler", "sarıyer", "maltepe"},
-            "outer": {"başakşehir", "beylikdüzü", "pendik", "kartal", "ümraniye", "sancaktepe", "çekmeköy", "bahçelievler"},
+            "outer": {"başakşehir", "beylikdüzü", "pendik", "kartal", "ümraniye", "sancaktepe", "çekmeköy"},
             "remote": {"esenyurt", "sultanbeyli", "arnavutköy", "silivri", "şile", "tuzla"},
         },
         "Ankara": {
@@ -150,10 +150,10 @@ def get_listings(
     district_filter = district.strip() if district else ""
 
     priorities = {
-        "price": priority_price,
-        "location": priority_location,
-        "size": priority_size,
-        "rooms": priority_rooms,
+        "price":    max(0.0, min(1.0, priority_price)),
+        "location": max(0.0, min(1.0, priority_location)),
+        "size":     max(0.0, min(1.0, priority_size)),
+        "rooms":    max(0.0, min(1.0, priority_rooms)),
     }
 
     scored = []

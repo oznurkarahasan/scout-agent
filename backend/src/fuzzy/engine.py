@@ -1,6 +1,9 @@
+import logging
 import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
+
+logger = logging.getLogger(__name__)
 
 class ScoutFuzzyEngine:
     def __init__(self):
@@ -47,70 +50,47 @@ class ScoutFuzzyEngine:
     def get_weighted_rules(self, priorities):
         """
         priorities values: 0.0 to 1.0
-        Using power of priority to make it more dominant.
+        Output label for each combination is computed dynamically from the
+        priority-weighted quality score, so priorities genuinely shift outcomes.
         """
-        def boost(w): return w ** 1.5 # Boost the importance differences
+        def boost(w):
+            return w ** 1.5
 
         w_p = boost(priorities.get('price', 0.5))
         w_l = boost(priorities.get('location', 0.5))
         w_s = boost(priorities.get('size', 0.5))
         w_m = boost(priorities.get('rooms', 0.5))
+        total_w = w_p + w_l + w_s + w_m
+        if total_w == 0:
+            w_p = w_l = w_s = w_m = 1.0
+            total_w = 4.0
+
+        # Feature quality on a 0-2 scale (bad=0, neutral=1, good=2)
+        P_SCORE = {'pahali': 0, 'makul': 1, 'ucuz': 2}
+        L_SCORE = {'uzak': 0, 'orta': 1, 'yakin': 2}
+        S_SCORE = {'kucuk': 0, 'ideal': 2}
+        R_SCORE = {'uyumsuz': 0, 'kismi': 1, 'uyumlu': 2}
+
+        def output_label(p, l, s, r):
+            """Priority-weighted quality score (0-2) → output label."""
+            score = (P_SCORE[p]*w_p + L_SCORE[l]*w_l + S_SCORE[s]*w_s + R_SCORE[r]*w_m) / total_w
+            if score < 0.125:  return 'cop'
+            if score < 0.875:  return 'dusuk'
+            if score < 1.375:  return 'orta'
+            if score < 1.875:  return 'yuksek'
+            return 'efsane'
 
         rules = []
+        w = min(w_p, w_l, w_s, w_m) or 1.0
 
-        # --- Single-input rules ---
-        rules.append(ctrl.Rule(self.price['ucuz'], self.score['yuksek'] % w_p))
-        rules.append(ctrl.Rule(self.price['pahali'], self.score['cop'] % w_p))
-        rules.append(ctrl.Rule(self.price['makul'], self.score['orta'] % w_p))
-
-        rules.append(ctrl.Rule(self.location['yakin'], self.score['efsane'] % (w_l * 1.3)))
-        rules.append(ctrl.Rule(self.location['uzak'], self.score['dusuk'] % w_l))
-        rules.append(ctrl.Rule(self.location['orta'], self.score['orta'] % w_l))
-
-        rules.append(ctrl.Rule(self.size['ideal'], self.score['yuksek'] % w_s))
-        rules.append(ctrl.Rule(self.size['kucuk'], self.score['dusuk'] % w_s))
-
-        rules.append(ctrl.Rule(self.room_match['uyumlu'], self.score['efsane'] % w_m))
-        rules.append(ctrl.Rule(self.room_match['kismi'], self.score['orta'] % w_m))
-        rules.append(ctrl.Rule(self.room_match['uyumsuz'], self.score['cop'] % w_m))
-
-        # --- Multi-input combination rules (4 girdi) ---
-        # En iyi senaryo: ucuz + yakın + ideal boyut + tam oda eşleşmesi
-        rules.append(ctrl.Rule(
-            self.price['ucuz'] & self.location['yakin'] & self.size['ideal'] & self.room_match['uyumlu'],
-            self.score['efsane'] % min(w_p, w_l, w_s, w_m)
-        ))
-        # İyi senaryo: makul fiyat + yakın + ideal + kısmi oda
-        rules.append(ctrl.Rule(
-            self.price['makul'] & self.location['yakin'] & self.size['ideal'] & self.room_match['kismi'],
-            self.score['yuksek'] % min(w_p, w_l, w_s, w_m)
-        ))
-        # Ortalama senaryo (en yaygın): makul + orta konum + ideal + kısmi oda
-        rules.append(ctrl.Rule(
-            self.price['makul'] & self.location['orta'] & self.size['ideal'] & self.room_match['kismi'],
-            self.score['orta'] % min(w_p, w_l, w_s, w_m)
-        ))
-        # Ucuz + orta konum + ideal + kısmi oda
-        rules.append(ctrl.Rule(
-            self.price['ucuz'] & self.location['orta'] & self.size['ideal'] & self.room_match['kismi'],
-            self.score['yuksek'] % min(w_p, w_l, w_s, w_m)
-        ))
-        # Kötü senaryo: pahalı + uzak + küçük + uyumsuz oda
-        rules.append(ctrl.Rule(
-            self.price['pahali'] & self.location['uzak'] & self.size['kucuk'] & self.room_match['uyumsuz'],
-            self.score['cop'] % min(w_p, w_l, w_s, w_m)
-        ))
-        # Kötü ama nötr oda: pahalı + uzak + küçük + kısmi
-        rules.append(ctrl.Rule(
-            self.price['pahali'] & self.location['uzak'] & self.size['kucuk'] & self.room_match['kismi'],
-            self.score['dusuk'] % min(w_p, w_l, w_s, w_m)
-        ))
-
-        # --- Conflict resolution: expensive+near uses priority comparison ---
-        if priorities.get('location', 0.5) >= priorities.get('price', 0.5):
-            rules.append(ctrl.Rule(self.price['pahali'] & self.location['yakin'], self.score['orta'] % w_l))
-        else:
-            rules.append(ctrl.Rule(self.price['pahali'] & self.location['yakin'], self.score['dusuk'] % w_p))
+        for p in ['pahali', 'makul', 'ucuz']:
+            for l in ['uzak', 'orta', 'yakin']:
+                for s in ['kucuk', 'ideal']:
+                    for r in ['uyumsuz', 'kismi', 'uyumlu']:
+                        rules.append(ctrl.Rule(
+                            self.price[p] & self.location[l] & self.size[s] & self.room_match[r],
+                            self.score[output_label(p, l, s, r)] % w
+                        ))
 
         return rules
 
@@ -133,5 +113,6 @@ class ScoutFuzzyEngine:
         try:
             self.scout_sim.compute()
             return self.scout_sim.output['suitability_score'], self.scout_sim
-        except:
+        except Exception as e:
+            logger.error("FuzzyEngine.compute() failed: %s | inputs=%s", e, inputs)
             return 0, None

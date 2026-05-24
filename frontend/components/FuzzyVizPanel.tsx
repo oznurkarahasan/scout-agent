@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { FuzzyInputs, Priorities } from "@/types/listing";
 
@@ -23,7 +23,6 @@ function trimfVal(x: number, a: number, b: number, c: number): number {
 }
 
 function boost(w: number) { return Math.pow(w, 1.5); }
-function avg(...vals: number[]) { return vals.reduce((s, v) => s + v, 0) / vals.length; }
 
 // ── Output MF functions (mirrors engine.py) ───────────────────────────────────
 const OUTPUT_MFS: Record<string, (x: number) => number> = {
@@ -170,10 +169,15 @@ function RuleRow({ a, strength, maxStr, idx }: { a: RuleActivation; strength: nu
 }
 
 function RuleFiringTable({ activations }: { activations: RuleActivation[] }) {
+  const [showAll, setShowAll] = useState(false);
+  const [onlyFired, setOnlyFired] = useState(true);
+  const fireThreshold = 0.01;
   // Combo rules: always show all, sorted by strength
   const combo = [...activations]
     .filter((a) => a.isCombo)
     .sort((a, b) => b.strength - a.strength);
+  const filtered = onlyFired ? combo.filter((a) => a.strength > fireThreshold) : combo;
+  const visible = showAll ? filtered : filtered.slice(0, 6);
   const maxStr = Math.max(...combo.map((a) => a.strength), 0.01);
 
   return (
@@ -182,15 +186,35 @@ function RuleFiringTable({ activations }: { activations: RuleActivation[] }) {
         <p className="text-xs font-bold text-gray-700">Kural Ateşleme</p>
         <span className="text-[8px] text-indigo-400 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded font-bold">fiyat & konum & boyut & oda</span>
       </div>
-      <p className="text-[10px] text-gray-400 mb-3">ort(fiyat, konum, boyut, oda üyeliği) × min(ağırlıklar) — her kural her ilanda ateşlenir</p>
+      <p className="text-[10px] text-gray-400 mb-3">min(fiyat, konum, boyut, oda üyeliği) × min(ağırlıklar) — her kural her ilanda ateşlenir</p>
 
-      {combo.length > 0 && (
+      <div className="flex items-center gap-2 mb-2">
+        <button
+          type="button"
+          onClick={() => setOnlyFired((v) => !v)}
+          className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 underline"
+        >
+          {onlyFired ? "Tüm kuralları göster" : "Sadece ateşlenenleri göster"}
+        </button>
+      </div>
+
+      {filtered.length > 0 && (
         <div className="space-y-1.5">
-          {combo.map((a, i) => <RuleRow key={i} a={a} strength={a.strength} maxStr={maxStr} idx={i} />)}
+          {visible.map((a, i) => <RuleRow key={i} a={a} strength={a.strength} maxStr={maxStr} idx={i} />)}
         </div>
       )}
 
-      {combo.every((a) => a.strength < 0.005) && (
+      {filtered.length > 6 && (
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          className="mt-2 text-[10px] font-bold text-indigo-600 hover:text-indigo-700 underline"
+        >
+          {showAll ? "Daha az goster" : "Daha fazla goster"}
+        </button>
+      )}
+
+      {filtered.length === 0 && (
         <p className="text-[10px] text-gray-400 italic mt-2">Hiçbir kombinasyon kuralı ateşlenmedi — tüm koşullar aynı anda sağlanmadı.</p>
       )}
     </div>
@@ -309,31 +333,52 @@ export default function FuzzyVizPanel({ fuzzyInputs: fi, priorities, actualScore
     const ws = boost(priorities.size);
     const wm = boost(priorities.rooms);
 
-    const acts: RuleActivation[] = [
-      // Single-input rules
-      { text: "fiyat['ucuz'] → score['yuksek']",    strength: mUcuz  * wp,        output: "yuksek", color: OUTPUT_COLORS.yuksek },
-      { text: "fiyat['pahali'] → score['cop']",      strength: mPahali * wp,       output: "cop",    color: OUTPUT_COLORS.cop },
-      { text: "fiyat['makul'] → score['orta']",      strength: mMakul  * wp,       output: "orta",   color: OUTPUT_COLORS.orta },
-      { text: "konum['yakin'] → score['efsane']",    strength: mYakin  * wl * 1.3, output: "efsane", color: OUTPUT_COLORS.efsane },
-      { text: "konum['uzak'] → score['dusuk']",      strength: mUzak   * wl,       output: "dusuk",  color: OUTPUT_COLORS.dusuk },
-      { text: "konum['orta'] → score['orta']",       strength: mOrtaL  * wl,       output: "orta",   color: OUTPUT_COLORS.orta },
-      { text: "boyut['ideal'] → score['yuksek']",    strength: mIdeal  * ws,       output: "yuksek", color: OUTPUT_COLORS.yuksek },
-      { text: "boyut['kucuk'] → score['dusuk']",     strength: mKucuk  * ws,       output: "dusuk",  color: OUTPUT_COLORS.dusuk },
-      { text: "oda['uyumlu'] → score['efsane']",     strength: mUyumlu * wm,       output: "efsane", color: OUTPUT_COLORS.efsane },
-      { text: "oda['kismi'] → score['orta']",        strength: mKismi  * wm,       output: "orta",   color: OUTPUT_COLORS.orta },
-      { text: "oda['uyumsuz'] → score['cop']",       strength: mUyumsuz * wm,      output: "cop",    color: OUTPUT_COLORS.cop },
-      // Multi-input combination rules (4 girdi)
-      // Kombinasyon kuralları — strength: 4 üyelik değerinin ortalaması × min(ağırlıklar)
-      { text: "ucuz & yakın & ideal & uyumlu → efsane",         strength: avg(mUcuz,   mYakin, mIdeal, mUyumlu)  * Math.min(wp, wl, ws, wm), output: "efsane", color: OUTPUT_COLORS.efsane, isCombo: true },
-      { text: "makul & yakın & ideal & kısmi oda → yüksek",     strength: avg(mMakul,  mYakin, mIdeal, mKismi)   * Math.min(wp, wl, ws, wm), output: "yuksek", color: OUTPUT_COLORS.yuksek, isCombo: true },
-      { text: "ucuz & orta konum & ideal & kısmi oda → yüksek", strength: avg(mUcuz,   mOrtaL, mIdeal, mKismi)   * Math.min(wp, wl, ws, wm), output: "yuksek", color: OUTPUT_COLORS.yuksek, isCombo: true },
-      { text: "makul & orta konum & ideal & kısmi oda → orta",  strength: avg(mMakul,  mOrtaL, mIdeal, mKismi)   * Math.min(wp, wl, ws, wm), output: "orta",   color: OUTPUT_COLORS.orta,   isCombo: true },
-      { text: "pahalı & uzak & küçük & uyumsuz → çöp",          strength: avg(mPahali, mUzak,  mKucuk, mUyumsuz) * Math.min(wp, wl, ws, wm), output: "cop",    color: OUTPUT_COLORS.cop,    isCombo: true },
-      { text: "pahalı & uzak & küçük & kısmi oda → düşük",      strength: avg(mPahali, mUzak,  mKucuk, mKismi)   * Math.min(wp, wl, ws, wm), output: "dusuk",  color: OUTPUT_COLORS.dusuk,  isCombo: true },
-    ];
+    const totalW = wp + wl + ws + wm || 4.0;
+    const wMin   = Math.min(wp, wl, ws, wm) || 1.0;
 
-    const centroid = mamdaniCentroid(acts);
-    return { activations: acts, centroid };
+    // mirrors engine.py output_label()
+    const lbl = (ps: number, ls: number, ss: number, rs: number): string => {
+      const s = (ps * wp + ls * wl + ss * ws + rs * wm) / totalW;
+      return s < 0.125 ? 'cop' : s < 0.875 ? 'dusuk' : s < 1.375 ? 'orta' : s < 1.875 ? 'yuksek' : 'efsane';
+    };
+
+    // full 54-rule backend (3×3×2×3) — compute all, list top 6 by strength
+    const pKeys  = ['pahali', 'makul', 'ucuz']            as const;
+    const lKeys  = ['uzak',   'orta',  'yakin']           as const;
+    const sKeys  = ['kucuk',  'ideal']                    as const;
+    const rKeys  = ['uyumsuz','kismi', 'uyumlu']          as const;
+    const pMF    = { pahali: mPahali, makul: mMakul, ucuz: mUcuz };
+    const lMF    = { uzak: mUzak, orta: mOrtaL, yakin: mYakin };
+    const sMF    = { kucuk: mKucuk, ideal: mIdeal };
+    const rMF    = { uyumsuz: mUyumsuz, kismi: mKismi, uyumlu: mUyumlu };
+    const pScore = { pahali: 0, makul: 1, ucuz: 2 };
+    const lScore = { uzak: 0, orta: 1, yakin: 2 };
+    const sScore = { kucuk: 0, ideal: 2 };
+    const rScore = { uyumsuz: 0, kismi: 1, uyumlu: 2 };
+    const pTR    = { pahali: 'pahalı', makul: 'makul', ucuz: 'ucuz' };
+    const lTR    = { uzak: 'uzak', orta: 'orta', yakin: 'yakın' };
+    const sTR    = { kucuk: 'küçük', ideal: 'ideal' };
+    const rTR    = { uyumsuz: 'uyumsuz', kismi: 'kısmi oda', uyumlu: 'uyumlu' };
+
+    const allRules: RuleActivation[] = [];
+    for (const p of pKeys) {
+      for (const l of lKeys) {
+        for (const s of sKeys) {
+          for (const r of rKeys) {
+            const strength = Math.min(pMF[p], lMF[l], sMF[s], rMF[r]) * wMin;
+            const out = lbl(pScore[p], lScore[l], sScore[s], rScore[r]);
+            allRules.push({
+              text: `${pTR[p]} & ${lTR[l]} & ${sTR[s]} & ${rTR[r]} → ${OUTPUT_LABELS[out]}`,
+              strength, output: out, color: OUTPUT_COLORS[out], isCombo: true,
+            });
+          }
+        }
+      }
+    }
+    allRules.sort((a, b) => b.strength - a.strength);
+
+    const centroid = mamdaniCentroid(allRules);
+    return { activations: allRules, centroid };
   }, [fi, priorities]);
 
   return (
